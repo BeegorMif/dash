@@ -22,22 +22,55 @@ display_help() {
     echo
 }
 
-#determine if script is being run on bullseye or above
-BULLSEYE=false
-read -d . DEBIAN_VERSION < /etc/debian_version
-if (( $DEBIAN_VERSION > 10 )); then
-  echo Detected Debian version of Bullseye or above
-  BULLSEYE=true
+# Check Distro version
+if [ -f /etc/os-release ]; then
+  OS_DISTRO=$(source /etc/os-release; echo ${PRETTY_NAME%% *})
+  if [ $OS_DISTRO = "Debian" ]; then
+    isDebian=true
+    #determine if script is being run on bullseye or above
+    read -d . DEBIAN_VERSION < /etc/debian_version
+    if (( $DEBIAN_VERSION > 10 )); then
+      echo Detected Debian version of Bullseye or above
+      BULLSEYE=true
+    else
+      echo Older version of Debian detected
+      BULLSEYE=false
+    fi
+  elif [ $OS_DISTRO = "Ubuntu" ]; then
+    isUbuntu=true
+    UBUNTU_VERSION=$(source /etc/os-release; echo ${VERSION_ID%% *} | cut -c1-2)
+    if (( $UBUNTU_VERSION >= 22 )); then
+      echo Detcted Ubuntu version of Jammy or above
+      JAMMY=true
+    else
+      echo Older version of Ubuntu detected.
+      JAMMY=false
+    fi
+  else
+    echo "Unsupported OS detected. Recommended Debian 12 or Ubuntu 22.04"
+    exit 1
+  fi
 fi
 
 #check if /etc/rpi-issue exists, if not set the install Args to be false
 if [ -f /etc/rpi-issue ]
 then
+  rpiModel=$(awk '{print $3}' < /sys/firmware/devicetree/base/model)
+  echo "Detected Raspberry Pi Model $rpiModel"
   installArgs="-DRPI_BUILD=true"
   isRpi=true
 else
   installArgs=""
   isRpi=false
+fi
+
+#check for potential resource limit
+totalMem=$(free -tm | awk '/Total/ {print $2}')
+if [[ $totalMem -lt 1900 ]]; then
+  echo "$totalMem MB RAM detected"
+  echo "You may run out of memory while compiling with less than 2GB"
+  echo "Consider raising swap space or compiling on another machine"
+  sleep 5;
 fi
 
 BUILD_TYPE="Release"
@@ -99,7 +132,7 @@ else
     if [ $isRpi = true ]; then
       pulseaudio=true
       bluez=true
-      ofono=true
+      ofono=false # Skip Ofono due to issue with Bluetooth HSP
     fi
 fi
 
@@ -113,7 +146,7 @@ dependencies=(
 "alsa-utils"
 "cmake"
 "libboost-all-dev"
-"libusb-1.0.0-dev"
+"libusb-1.0-0-dev"
 "libssl-dev"
 "libprotobuf-dev"
 "protobuf-c-compiler"
@@ -160,14 +193,15 @@ if [ $deps = false ]
   then
     echo -e skipping dependencies '\n'
   else
-    if [ $BULLSEYE = false ]; then
+    if [ $isDebian ] && [ $BULLSEYE = false ]; then
       echo Adding qt5-default to dependencies
       dependencies[${#dependencies[@]}]="qt5-default"
     fi
+
     echo installing dependencies
     #loop through dependencies and install
-    echo Running apt update
-    sudo apt update
+    echo Running apt-get update
+    sudo apt-get update
 
     installString="sudo apt-get install -y "
 
@@ -191,6 +225,9 @@ if [ $pulseaudio = false ]
   then
     echo -e skipping pulseaudio '\n'
   else
+    #change to project root
+    cd $script_path
+    
     echo Preparing to compile and install pulseaudio
     echo Grabbing pulseaudio deps
     sudo sed -i 's/#deb-src/deb-src/g' /etc/apt/sources.list
@@ -226,14 +263,16 @@ if [ $ofono = false ]
         echo Package failed to install with error code $?, quitting check logs above
         exit 1
     fi
-    sudo sed -i 's/load-module module-bluetooth-discover/load-module module-bluetooth-discover headset=ofono/g' /usr/local/etc/pulse/default.pa
-    sudo cat <<EOT >> /usr/local/etc/pulse/default.pa
-    ### Echo cancel and noise reduction
-    .ifexists module-echo-cancel.so
-    load-module module-echo-cancel aec_method=webrtc source_name=ec_out sink_name=ec_ref
-    set-default-source ec_out
-    set-default-sink ec_ref
-    .endif
+    echo "Enabling Ofono in Pulse config"
+    sudo sed -i 's/load-module module-bluetooth-discover/load-module module-bluetooth-discover headset=ofono/g' /etc/pulse/default.pa
+    sudo tee -a /etc/pulse/default.pa <<'EOT'
+
+### Echo cancel and noise reduction
+.ifexists module-echo-cancel.so
+load-module module-echo-cancel aec_method=webrtc source_name=ec_out sink_name=ec_ref
+set-default-source ec_out
+set-default-sink ec_ref
+.endif
 EOT
 fi
 
@@ -242,6 +281,9 @@ if [ $bluez = false ]
   then
     echo -e skipping bluez '\n'
   else
+    #change to project root
+    cd $script_path
+
     echo Installing bluez
     sudo apt-get install -y libdbus-1-dev libudev-dev libical-dev libreadline-dev libjson-c-dev
     wget www.kernel.org/pub/linux/bluetooth/bluez-5.63.tar.xz
@@ -258,8 +300,8 @@ fi
 if [ $aasdk = false ]; then
 	echo -e Skipping aasdk '\n'
 else
-  #change to parent directory
-  cd ..
+  #change to project root
+  cd $script_path
 
   #clone aasdk
   git clone $aasdkRepo
@@ -280,6 +322,10 @@ else
   #change into aasdk folder
   echo -e moving to aasdk '\n'
   cd aasdk
+
+  #apply set_FIPS_mode patch
+  echo Apply set_FIPS_mode patch
+  git apply $script_path/patches/aasdk_openssl-fips-fix.patch
 
   #create build directory
   echo Creating aasdk build directory
@@ -330,10 +376,10 @@ fi
 if [ $h264bitstream = false ]; then
 	echo -e Skipping h264bitstream '\n'
 else
-  #change to parent directory
-  cd ..
+  #change to project root
+  cd $script_path
 
-  #clone aasdk
+  #clone h264bitstream
   git clone $h264bitstreamRepo
   if [[ $? -eq 0 ]]; then
     echo -e h264bitstream Cloned ok '\n'
@@ -402,8 +448,8 @@ fi
 if [ $gstreamer = true ]; then
   echo installing gstreamer
 
-  #change to parent directory
-  cd ..
+  #change to project root
+  cd $script_path
 
   #clone gstreamer
   echo Cloning Gstreamer
@@ -425,7 +471,7 @@ if [ $gstreamer = true ]; then
   #change into newly cloned directory
   cd qt-gstreamer
 
-  if [ $BULLSEYE = true ]; then
+  if [ $BULLSEYE = true ] || [ $JAMMY = true ]; then
     #apply 1.18 patch
     echo Applying qt-gstreamer 1.18 patch
     git apply $script_path/patches/qt-gstreamer-1.18.patch
@@ -434,6 +480,10 @@ if [ $gstreamer = true ]; then
   #apply greenline patch
   echo Apply greenline patch
   git apply $script_path/patches/greenline_fix.patch
+
+  #apply atomic patch
+  echo Apply atomic patch
+  git apply $script_path/patches/qt-gstreamer_atomic-load.patch
 
   #create build directory
   echo Creating Gstreamer build directory
@@ -459,7 +509,7 @@ if [ $gstreamer = true ]; then
   fi
 
   echo Making Gstreamer
-  make -j4
+  make
 
   if [[ $? -eq 0 ]]; then
     echo -e Gstreamer make ok'\n'
@@ -493,8 +543,11 @@ if [ $openauto = false ]; then
   echo -e skipping openauto'\n'
 else
   echo Installing openauto
-  cd ..
 
+  #change to project root
+  cd $script_path
+
+  #clone openauto
   echo -e cloning openauto'\n'
   git clone $openautoRepo
   if [[ $? -eq 0 ]]; then
@@ -536,6 +589,7 @@ else
 
   echo Beginning openauto make
   make
+
   if [[ $? -eq 0 ]]; then
     echo -e Openauto make OK'\n'
   else
@@ -561,6 +615,9 @@ if [ $dash = false ]; then
 	echo -e Skipping dash'\n'
 else
 
+  #change to project root
+  cd $script_path
+
   #create build directory
   echo Creating dash build directory
   mkdir build
@@ -585,6 +642,7 @@ else
 
   echo Running Dash make
   make
+  
   if [[ $? -eq 0 ]]; then
       echo -e Dash make ok, executable can be found ../bin/dash
       echo
@@ -608,34 +666,37 @@ else
       echo Dash make failed with error code $?
       exit 1
   fi
+  cd $script_path
 
-  #Setting openGL driver and GPU memory to 128mb
+  #Raspberry Pi addons 
   if $isRpi; then
-    sudo raspi-config nonint do_memory_split 128
-    if [[ $? -eq 0 ]]; then
-      echo -e Memory set to 128mb'\n'
+    read -p "View select Raspberry Pi enhancements? (y/N) " choice
+    if [[ $choice == "y" || $choice == "Y" ]]; then
+      ./rpi.sh
     else
-      echo Setting memory failed with error code $? please set manually
-      exit 1
+      echo "Continuing"
     fi
-
-    sudo raspi-config nonint do_gldriver G2
-    if [[ $? -eq 0 ]]; then
-      echo -e OpenGL set ok'\n'
-    else
-      echo Setting openGL failed with error code $? please set manually
-      exit 1
-    fi
-
-    echo enabling krnbt to speed up boot and improve stability
-    cat <<EOT >> /boot/config.txt
-      dtparam=krnbt
-EOT
   fi
 
+  #Autostart options
+  read -p "View autostart options? (y/N) " choice
+  if [[ $choice == "y" || $choice == "Y" ]]; then
+    ./autostart.sh
+  else
+    echo "Continuing"
+  fi
 
-  #Start app
-  echo Starting app
-  cd ../bin
-  ./dash
+  read -p "Build complete! Run application? (y/N) " choice
+  if [[ $choice == "y" || $choice == "Y" ]]; then
+    ./bin/dash
+    if [[ $? -eq 1 ]]; then
+      echo "Something went wrong! You may need to set up Xorg/X11"
+      exit 1
+    else
+      exit 0
+    fi
+  else
+     echo "Exiting. Check autostart.sh and rpi.sh for more options"
+     exit 0
+  fi
 fi
