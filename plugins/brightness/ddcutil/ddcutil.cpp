@@ -30,7 +30,7 @@ void Ddcutil::set(int brightness)
 {
     if (this->screen != nullptr) {
         QProcess process(this);
-        process.start(QString("ddcutil --output %1 setvcp 10 %2").arg(this->screen->name()).arg(brightness / 2.55));
+        process.startDetached(QString("sudo ddcutil setvcp 10 %2").arg(static_cast<int>(brightness / 2.55)));
         process.waitForFinished();
     }
 }
