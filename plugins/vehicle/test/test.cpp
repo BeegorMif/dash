@@ -25,7 +25,7 @@ bool Test::init(ICANBus*)
         this->vehicle = new Vehicle(*this->arbiter);
         this->vehicle->pressure_init("psi", 35);
         this->vehicle->disable_sensors();
-        this->vehicle->rotate(270);
+        this->vehicle->rotate(0);
 
         this->climate = new Climate(*this->arbiter);
         this->climate->max_fan_speed(4);
