@@ -133,7 +133,7 @@ bool Test::init(ICANBus*)
                     break;
             }
         });
-        timer->start(1000);
+        // timer->start(1000);
 
         auto timer2 = new QTimer(this);
         connect(timer2, &QTimer::timeout, [this]{
@@ -142,7 +142,7 @@ bool Test::init(ICANBus*)
                 this->climate->right_temp((rand() % 20) + 60);
             }
         });
-        timer2->start(1000);
+        // timer2->start(1000);
 
         return true;
     }
