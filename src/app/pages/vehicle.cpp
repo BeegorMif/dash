@@ -33,8 +33,8 @@ Gauge::Gauge(units_t units, QFont value_font, QFont unit_font, Gauge::Orientatio
     using namespace std::placeholders;
     std::function<void(QByteArray)> callback = std::bind(&Gauge::can_callback, this, std::placeholders::_1);
 
-    bus->registerFrameHandler(cmds[0].frame.frameId()+0x9, callback);
-    DASH_LOG(info)<<"[Gauges] Registered frame handler for id "<<(cmds[0].frame.frameId()+0x9);
+    bus->registerFrameHandler(cmds[0].frame.frameId()+0x1A0, callback);
+    DASH_LOG(info)<<"[Gauges] Registered frame handler for id "<<(cmds[0].frame.frameId()+0x1A0);
 
     this->si = config->get_si_units();
 
