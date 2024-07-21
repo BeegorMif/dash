@@ -71,10 +71,10 @@ void bmw::tpmsUpdate(QByteArray payload){
 void bmw::updateSteeringButtons(QByteArray payload){
     this->debug->tpmsTwo->setText(QString::number((uint8_t)payload.at(0)>>3));
     this->debug->tpmsThree->setText(QString::number((uint8_t)payload.at(0)>>2));
-    this->debug->tpmsFour->setText(QString::number((uint8_t)payload.at(0)));
-    this->debug->tpmsFive->setText(QString::number((uint8_t)payload.at(0)));
-    this->debug->tpmsSix->setText(QString::number((uint8_t)payload.at(0)>>5));
-    this->debug->tpmsSeven->setText(QString::number((uint8_t)payload.at(0)>>6));
+    // this->debug->tpmsFour->setText(QString::number((uint8_t)payload.at(0)));
+    // this->debug->tpmsFive->setText(QString::number((uint8_t)payload.at(0)));
+    // this->debug->tpmsSix->setText(QString::number((uint8_t)payload.at(0)>>5));
+    // this->debug->tpmsSeven->setText(QString::number((uint8_t)payload.at(0)>>6));
 }
 void bmw::updateIndicators(QByteArray payload){
     this->debug->tpmsEight->setText(QString::number((uint8_t)payload.at(0)>>4));
@@ -101,7 +101,7 @@ void bmw::updateWipers(QByteArray payload){
     this->debug->tpmsFourteen->setText(QString::number((uint8_t)payload.at(0)));
 }
 void bmw::updateExtTemp(QByteArray payload){
-    this->debug->tpmsFifteen->setText(QString::number((uint8_t)payload.at(0)-48*0.555536));
+    this->debug->tpmsFifteen->setText(QString::number(((uint8_t)payload.at(0)-48)*0.555536));
 }
 void bmw::updateHandbrake(QByteArray payload){
     this->debug->tpmsSixteen->setText(QString::number((uint8_t)payload.at(0)));
@@ -248,10 +248,10 @@ DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
     QLabel* textOne = new QLabel("Vehicle Speed", this);
     QLabel* textTwo = new QLabel("Steering Wheel - Vol +", this);
     QLabel* textThree = new QLabel("Steering Wheel - Vol -", this);
-    QLabel* textFour = new QLabel("Steering Wheel - Voice", this);
-    QLabel* textFive = new QLabel("Steering Wheel - Telphone", this);
-    QLabel* textSix = new QLabel("Steering Wheel - Media Up", this);
-    QLabel* textSeven = new QLabel("Steering Wheel - Media Down", this);
+    // QLabel* textFour = new QLabel("Steering Wheel - Voice", this);
+    // QLabel* textFive = new QLabel("Steering Wheel - Telphone", this);
+    // QLabel* textSix = new QLabel("Steering Wheel - Media Up", this);
+    // QLabel* textSeven = new QLabel("Steering Wheel - Media Down", this);
     QLabel* textEight = new QLabel("Indicator Left", this);
     QLabel* textNine = new QLabel("Indicator Right", this);
     QLabel* textTen = new QLabel("Indicator Hold", this);
@@ -266,10 +266,10 @@ DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
     tpmsOne = new QLabel("--", this);
     tpmsTwo = new QLabel("--", this);
     tpmsThree = new QLabel("--", this);
-    tpmsFour = new QLabel("--", this);
-    tpmsFive = new QLabel("--", this);
-    tpmsSix = new QLabel("--", this);
-    tpmsSeven = new QLabel("--", this);
+    // tpmsFour = new QLabel("--", this);
+    // tpmsFive = new QLabel("--", this);
+    // tpmsSix = new QLabel("--", this);
+    // tpmsSeven = new QLabel("--", this);
     tpmsEight = new QLabel("--", this);
     tpmsNine = new QLabel("--", this);
     tpmsTen = new QLabel("--", this);
@@ -298,21 +298,21 @@ DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
     layout->addWidget(tpmsThree);
     layout->addWidget(Session::Forge::br(false));
 
-    layout->addWidget(textFour); 
-    layout->addWidget(tpmsFour);
-    layout->addWidget(Session::Forge::br(false));
+    // layout->addWidget(textFour); 
+    // layout->addWidget(tpmsFour);
+    // layout->addWidget(Session::Forge::br(false));
 
-    layout->addWidget(textFive); 
-    layout->addWidget(tpmsFive);
-    layout->addWidget(Session::Forge::br(false));
+    // layout->addWidget(textFive); 
+    // layout->addWidget(tpmsFive);
+    // layout->addWidget(Session::Forge::br(false));
 
-    layout->addWidget(textSix); 
-    layout->addWidget(tpmsSix);
-    layout->addWidget(Session::Forge::br(false));
+    // layout->addWidget(textSix); 
+    // layout->addWidget(tpmsSix);
+    // layout->addWidget(Session::Forge::br(false));
 
-    layout->addWidget(textSeven); 
-    layout->addWidget(tpmsSeven);
-    layout->addWidget(Session::Forge::br(false));
+    // layout->addWidget(textSeven); 
+    // layout->addWidget(tpmsSeven);
+    // layout->addWidget(Session::Forge::br(false));
 
 
     layout->addWidget(textEight); 
