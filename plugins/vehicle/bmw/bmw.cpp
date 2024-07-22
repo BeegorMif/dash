@@ -11,9 +11,9 @@ bool bmw::init(ICANBus* canbus){
 
         this->debug = new DebugWindow(*this->arbiter);
 
-        canbus->registerFrameHandler(0x60D, [this](QByteArray payload){this->monitorHeadlightStatus(payload);});
-        canbus->registerFrameHandler(0x54B, [this](QByteArray payload){this->updateClimateDisplay(payload);});
-        canbus->registerFrameHandler(0x542, [this](QByteArray payload){this->updateTemperatureDisplay(payload);});
+        // canbus->registerFrameHandler(0x60D, [this](QByteArray payload){this->monitorHeadlightStatus(payload);});
+        // canbus->registerFrameHandler(0x54B, [this](QByteArray payload){this->updateClimateDisplay(payload);});
+        // canbus->registerFrameHandler(0x542, [this](QByteArray payload){this->updateTemperatureDisplay(payload);});
         canbus->registerFrameHandler(0x551, [this](QByteArray payload){this->engineUpdate(payload);});
         canbus->registerFrameHandler(0x1A0, [this](QByteArray payload){this->tpmsUpdate(payload);});
         canbus->registerFrameHandler(0x1D6, [this](QByteArray payload){this->updateSteeringButtons(payload);});
@@ -128,20 +128,20 @@ void bmw::updateReverse(QByteArray payload){
 // |unknown|unknown|unknown|unknown|unknown|unknown|unknown|FOGLIGHTS|
 // OTHERS UNKNOWN
 
-void bmw::monitorHeadlightStatus(QByteArray payload){
-    if((payload.at(0)>>1) & 1){
-        //headlights are ON - turn to dark mode
-        if(this->arbiter->theme().mode == Session::Theme::Light){
-            this->arbiter->set_mode(Session::Theme::Dark);
-        }
-    }
-    else{
-        //headlights are off or not fully on (i.e. sidelights only) - make sure is light mode
-        if(this->arbiter->theme().mode == Session::Theme::Dark){
-            this->arbiter->set_mode(Session::Theme::Light);
-        }
-    }
-}
+// void bmw::monitorHeadlightStatus(QByteArray payload){
+//     if((payload.at(0)>>1) & 1){
+//         //headlights are ON - turn to dark mode
+//         if(this->arbiter->theme().mode == Session::Theme::Light){
+//             this->arbiter->set_mode(Session::Theme::Dark);
+//         }
+//     }
+//     else{
+//         //headlights are off or not fully on (i.e. sidelights only) - make sure is light mode
+//         if(this->arbiter->theme().mode == Session::Theme::Dark){
+//             this->arbiter->set_mode(Session::Theme::Light);
+//         }
+//     }
+// }
 
 // HVAC
 // 54B
@@ -172,45 +172,45 @@ void bmw::monitorHeadlightStatus(QByteArray payload){
 //
 // ALL OTHERS UNKNOWN
 
-bool oldStatus = true;
+// bool oldStatus = true;
 
-void bmw::updateClimateDisplay(QByteArray payload){
-    duelClimate = (payload.at(3)>>5) & 1;
-    bool hvacOff = payload.at(0) & 1;
-    if(hvacOff != oldStatus){
-        oldStatus = hvacOff;
-        if(hvacOff){
-            climate->airflow(Airflow::OFF);
-            climate->fan_speed(0);
-            G37_LOG(info)<<"Climate is off";
-            return;
-        }
-    }
-    uint8_t airflow = (payload.at(2) >> 3) & 0b111;
-    uint8_t dash_airflow = 0;
-    switch(airflow){
-        case(1):
-            dash_airflow = Airflow::BODY;
-            break;
-        case(2):
-            dash_airflow = Airflow::BODY | Airflow::FEET;
-            break;
-        case(3):
-            dash_airflow = Airflow::FEET;
-            break;
-        case(4):
-            dash_airflow = Airflow::DEFROST | Airflow::FEET;
-            break;
-        case(5):
-            dash_airflow = Airflow::DEFROST;
-            break;
-    }
-    if(climate->airflow()!=dash_airflow)
-        climate->airflow(dash_airflow);
-    uint8_t fanLevel = (payload.at(4)>>3) & 0b111;
-    if(climate->fan_speed()!=fanLevel)
-        climate->fan_speed(fanLevel);
-}
+// void bmw::updateClimateDisplay(QByteArray payload){
+//     duelClimate = (payload.at(3)>>5) & 1;
+//     bool hvacOff = payload.at(0) & 1;
+//     if(hvacOff != oldStatus){
+//         oldStatus = hvacOff;
+//         if(hvacOff){
+//             climate->airflow(Airflow::OFF);
+//             climate->fan_speed(0);
+//             G37_LOG(info)<<"Climate is off";
+//             return;
+//         }
+//     }
+//     uint8_t airflow = (payload.at(2) >> 3) & 0b111;
+//     uint8_t dash_airflow = 0;
+//     switch(airflow){
+//         case(1):
+//             dash_airflow = Airflow::BODY;
+//             break;
+//         case(2):
+//             dash_airflow = Airflow::BODY | Airflow::FEET;
+//             break;
+//         case(3):
+//             dash_airflow = Airflow::FEET;
+//             break;
+//         case(4):
+//             dash_airflow = Airflow::DEFROST | Airflow::FEET;
+//             break;
+//         case(5):
+//             dash_airflow = Airflow::DEFROST;
+//             break;
+//     }
+//     if(climate->airflow()!=dash_airflow)
+//         climate->airflow(dash_airflow);
+//     uint8_t fanLevel = (payload.at(4)>>3) & 0b111;
+//     if(climate->fan_speed()!=fanLevel)
+//         climate->fan_speed(fanLevel);
+// }
 
 // Climate
 // 542
@@ -223,18 +223,18 @@ void bmw::updateClimateDisplay(QByteArray payload){
 // entire byte is passenger side temperature, 60F->90F
 // note that this byte is only updated when duel climate is on. When duel climate is off, SECOND BYTE contains accurate passenger temperature.
 
-void bmw::updateTemperatureDisplay(QByteArray payload){
-    if(climate->right_temp()!=(unsigned char)payload.at(1))
-        climate->right_temp((unsigned char)payload.at(1));
-    if(duelClimate){
-        if(climate->left_temp()!=(unsigned char)payload.at(2)){
-            climate->left_temp((unsigned char)payload.at(2));
-        }
-    }else{
-        if(climate->left_temp()!=(unsigned char)payload.at(1))
-            climate->left_temp((unsigned char)payload.at(1));
-    }
-}
+// void bmw::updateTemperatureDisplay(QByteArray payload){
+//     if(climate->right_temp()!=(unsigned char)payload.at(1))
+//         climate->right_temp((unsigned char)payload.at(1));
+//     if(duelClimate){
+//         if(climate->left_temp()!=(unsigned char)payload.at(2)){
+//             climate->left_temp((unsigned char)payload.at(2));
+//         }
+//     }else{
+//         if(climate->left_temp()!=(unsigned char)payload.at(1))
+//             climate->left_temp((unsigned char)payload.at(1));
+//     }
+// }
 
 
 
