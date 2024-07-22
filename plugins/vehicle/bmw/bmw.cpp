@@ -20,7 +20,6 @@ bool bmw::init(ICANBus* canbus){
         canbus->registerFrameHandler(0x1F6, [this](QByteArray payload){this->updateIndicators(payload);});
         canbus->registerFrameHandler(0x200, [this](QByteArray payload){this->updateCruiseControl(payload);});
         canbus->registerFrameHandler(0x252, [this](QByteArray payload){this->updateWipers(payload);});
-        canbus->registerFrameHandler(0x252, [this](QByteArray payload){this->updateWipers(payload);});
         canbus->registerFrameHandler(0x200, [this](QByteArray payload){this->updateCruiseControl(payload);});
         canbus->registerFrameHandler(0x2CA, [this](QByteArray payload){this->updateExtTemp(payload);});
         canbus->registerFrameHandler(0x34F, [this](QByteArray payload){this->updateHandbrake(payload);});
