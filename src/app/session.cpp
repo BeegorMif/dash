@@ -331,8 +331,20 @@ QWidget *Session::Forge::brightness_slider(bool buttons) const
         this->iconize("brightness_high", brighten_button, 26);
         QObject::connect(brighten_button, &QPushButton::clicked, [this]{ this->arbiter_.increase_brightness(18); });
 
+        auto max_button = new QPushButton();
+        max_button->setFlat(true);
+        this->iconize("brightness_max", max_button, 26);
+        QObject::connect(max_button, &QPushButton::clicked, [this]{ this->arbiter_.max_brightness(); });
+
+        auto min_button = new QPushButton();
+        min_button->setFlat(true);
+        this->iconize("brightness_min", min_button, 26);
+        QObject::connect(min_button, &QPushButton::clicked, [this]{ this->arbiter_.min_brightness(); });
+
         layout->addWidget(dim_button);
         layout->addWidget(brighten_button);
+        layout->addWidget(min_button);
+        layout->addWidget(max_button);
     }
 
     layout->insertWidget(1, slider, 4);

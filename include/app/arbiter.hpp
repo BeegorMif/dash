@@ -40,6 +40,8 @@ class Arbiter : public QObject {
     void set_brightness(uint8_t brightness);
     void decrease_brightness(uint8_t val);
     void increase_brightness(uint8_t val);
+    void max_brightness();
+    void min_brightness();
     void set_volume(uint8_t volume);
     void decrease_volume(uint8_t val);
     void increase_volume(uint8_t val);
