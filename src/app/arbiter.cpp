@@ -48,39 +48,6 @@ void Arbiter::set_scale(double scale)
     emit scale_changed(scale);
 }
 
-void Arbiter::set_status_bar(bool enabled)
-{
-    this->layout().status_bar = enabled;
-    this->settings().setValue("Layout/status_bar", enabled);
-
-    emit status_bar_changed(enabled);
-}
-
-void Arbiter::set_control_bar(bool enabled)
-{
-    this->layout().control_bar.enabled = enabled;
-    this->settings().setValue("Layout/ControlBar/enabled", enabled);
-
-    emit control_bar_changed(enabled);
-}
-
-void Arbiter::set_curr_quick_view(QuickView *quick_view)
-{
-    auto id = this->layout().control_bar.quick_view_id(quick_view);
-    if (id < 0)
-        return;
-
-    this->layout().control_bar.curr_quick_view = quick_view;
-    this->settings().setValue("Layout/ControlBar/quick_view", id);
-
-    emit curr_quick_view_changed(quick_view);
-}
-
-void Arbiter::set_curr_quick_view(int id)
-{
-    this->set_curr_quick_view(this->layout().control_bar.quick_view(id));
-}
-
 void Arbiter::set_curr_page(Page *page)
 {
     if (this->layout().page_id(page) < 0 || !page->enabled())
@@ -204,6 +171,16 @@ void Arbiter::decrease_brightness(uint8_t val)
 void Arbiter::increase_brightness(uint8_t val)
 {
     this->set_brightness(std::min(std::max(1, this->system().brightness.value + val), 255));
+}
+
+void Arbiter::max_brightness()
+{
+    this->set_brightness(255);
+}
+
+void Arbiter::min_brightness()
+{
+    this->set_brightness(1);
 }
 
 void Arbiter::set_volume(uint8_t volume)

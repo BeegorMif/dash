@@ -17,7 +17,6 @@
 #include "app/session.hpp"
 #include "app/window.hpp"
 #include "app/pages/settings.hpp"
-#include "app/services/server.hpp"
 #include "app/widgets/color_picker.hpp"
 #include "app/widgets/selector.hpp"
 #include "app/widgets/switch.hpp"
@@ -63,8 +62,6 @@ QWidget *MainSettingsTab::settings_widget()
     layout->addWidget(this->volume_row_widget(), 1);
     layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->brightness_row_widget(), 1);
-    layout->addWidget(Session::Forge::br(), 1);
-    layout->addWidget(this->server_row_widget(), 1);
     layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->controls_row_widget(), 1);
 
@@ -187,29 +184,6 @@ QWidget *MainSettingsTab::volume_row_widget()
     return widget;
 }
 
-QWidget *MainSettingsTab::server_row_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-
-    QLabel *label = new QLabel("Server", widget);
-    layout->addWidget(label, 1);
-
-    Switch *toggle = new Switch(widget);
-    toggle->scale(this->arbiter.layout().scale);
-    toggle->setChecked(this->arbiter.system().server.enabled());
-    connect(&this->arbiter.system().server, &Server::changed, [toggle](bool enabled){
-        toggle->setChecked(enabled);
-    });
-    connect(toggle, &Switch::stateChanged, [this](bool state){
-        this->arbiter.system().server.enable(state);
-    });
-
-    layout->addWidget(toggle, 1, Qt::AlignHCenter);
-
-    return widget;
-}
-
 QWidget *MainSettingsTab::controls_row_widget()
 {
     QWidget *widget = new QWidget(this);
@@ -274,17 +248,6 @@ QWidget *LayoutSettingsTab::settings_widget()
     layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->fullscreen_widget(), 1);
     layout->addWidget(this->fullscreen_on_start_widget(), 1);
-    layout->addWidget(Session::Forge::br(), 1);
-    layout->addWidget(this->status_bar_widget(), 1);
-    layout->addWidget(Session::Forge::br(), 1);
-    layout->addWidget(this->control_bar_widget(), 1);
-
-    QWidget *controls_bar_row = this->quick_view_row_widget();
-    controls_bar_row->setVisible(this->arbiter.layout().control_bar.enabled);
-    connect(&this->arbiter, &Arbiter::control_bar_changed, [controls_bar_row](bool enabled){
-        controls_bar_row->setVisible(enabled);
-    });
-    layout->addWidget(controls_bar_row, 1);
 
     layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->scale_row_widget(), 1);
@@ -362,60 +325,6 @@ QWidget *LayoutSettingsTab::fullscreen_on_start_widget()
     toggle->setChecked(this->arbiter.layout().fullscreen.on_start);
     connect(toggle, &Switch::stateChanged, [this](bool state){ this->arbiter.set_fullscreen_on_start(state); });
     layout->addWidget(toggle, 1, Qt::AlignHCenter);
-
-    return widget;
-}
-
-QWidget *LayoutSettingsTab::status_bar_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-
-    QLabel *label = new QLabel("Status Bar", widget);
-    layout->addWidget(label, 1);
-
-    Switch *toggle = new Switch(widget);
-    toggle->scale(this->arbiter.layout().scale);
-    toggle->setChecked(this->arbiter.layout().status_bar);
-    connect(toggle, &Switch::stateChanged, [this](bool state){ this->arbiter.set_status_bar(state); });
-    layout->addWidget(toggle, 1, Qt::AlignHCenter);
-
-    return widget;
-}
-
-QWidget *LayoutSettingsTab::control_bar_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-
-    QLabel *label = new QLabel("Control Bar", widget);
-    layout->addWidget(label, 1);
-
-    Switch *toggle = new Switch(widget);
-    toggle->scale(this->arbiter.layout().scale);
-    toggle->setChecked(this->arbiter.layout().control_bar.enabled);
-    connect(toggle, &Switch::stateChanged, [this](bool state){ this->arbiter.set_control_bar(state); });
-    layout->addWidget(toggle, 1, Qt::AlignHCenter);
-
-    return widget;
-}
-
-QWidget *LayoutSettingsTab::quick_view_row_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-
-    QLabel *label = new QLabel("Quick View", widget);
-    layout->addWidget(label, 1);
-
-    QStringList quick_views;
-    for (auto quick_view : this->arbiter.layout().control_bar.quick_views())
-        quick_views.append(quick_view->name());
-    Selector *selector = new Selector(quick_views, this->arbiter.layout().control_bar.curr_quick_view->name(), this->arbiter.forge().font(14), this->arbiter, widget);
-    connect(selector, &Selector::idx_changed, [this](int idx){
-        this->arbiter.set_curr_quick_view(idx);
-    });
-    layout->addWidget(selector, 1);
 
     return widget;
 }
