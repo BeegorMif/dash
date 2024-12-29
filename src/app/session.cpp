@@ -309,16 +309,7 @@ QWidget *Session::Forge::brightness_slider(bool buttons) const
     auto widget = new QWidget();
     auto layout = new QHBoxLayout(widget);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
-
-    auto slider = new QSlider(Qt::Orientation::Horizontal);
-    slider->setTracking(false);
-    slider->setRange(76, 255);
-    slider->setValue(this->arbiter_.system().brightness.value);
-    QObject::connect(slider, &QSlider::sliderReleased, [this, slider]{
-        this->arbiter_.set_brightness(slider->sliderPosition());
-    });
-    QObject::connect(&this->arbiter_, &Arbiter::brightness_changed, [slider](int brightness){ slider->setValue(brightness); });
+    layout->setSpacing(1);
 
     if (buttons) {
         auto dim_button = new QPushButton();
@@ -333,12 +324,12 @@ QWidget *Session::Forge::brightness_slider(bool buttons) const
 
         auto max_button = new QPushButton();
         max_button->setFlat(true);
-        this->iconize("brightness_max", max_button, 26);
+        max_button->setText("Max");
         QObject::connect(max_button, &QPushButton::clicked, [this]{ this->arbiter_.max_brightness(); });
 
         auto min_button = new QPushButton();
         min_button->setFlat(true);
-        this->iconize("brightness_min", min_button, 26);
+        min_button->setText("Min");
         QObject::connect(min_button, &QPushButton::clicked, [this]{ this->arbiter_.min_brightness(); });
 
         layout->addWidget(dim_button);
@@ -347,7 +338,7 @@ QWidget *Session::Forge::brightness_slider(bool buttons) const
         layout->addWidget(max_button);
     }
 
-    layout->insertWidget(1, slider, 4);
+    // layout->insertWidget(1, 4);
 
     return widget;
 }
