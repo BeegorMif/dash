@@ -8,6 +8,7 @@
 /h264bitstream
 /aasdk
 /qt-gstreamer
+/openauto
 # Compiled source #
 ###################
 *.com
