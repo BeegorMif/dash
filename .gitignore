@@ -5,7 +5,9 @@
 /lib
 /nbproject
 /cmake-build-debug
-
+/h264bitstream
+/aasdk
+/qt-gstreamer
 # Compiled source #
 ###################
 *.com
