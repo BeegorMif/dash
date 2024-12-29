@@ -17,7 +17,6 @@
 #include "app/pages/launcher.hpp"
 #include "app/pages/media.hpp"
 #include "app/pages/settings.hpp"
-#include "app/quick_views/combo.hpp"
 #include "app/utilities/icon_engine.hpp"
 #include "plugins/brightness_plugin.hpp"
 #include "aasdk_proto/ButtonCodeEnum.pb.h"
@@ -81,20 +80,6 @@ QPalette Session::Theme::palette() const
     return palette;
 }
 
-Session::Layout::ControlBar::ControlBar(QSettings &settings, Arbiter &arbiter)
-    : enabled(settings.value("Layout/ControlBar/enabled", true).toBool())
-    , curr_quick_view(nullptr)
-{
-    this->quick_views_ = {
-        new NullQuickView(arbiter),
-        new VolumeQuickView(arbiter),
-        new BrightnessQuickView(arbiter),
-        new ComboQuickView(arbiter)
-    };
-
-    this->curr_quick_view = this->quick_views_.value(settings.value("Layout/ControlBar/quick_view", 0).toInt());
-}
-
 Session::Layout::Fullscreen::Fullscreen(QSettings &settings, Arbiter &arbiter)
     : enabled(false)
     , curr_toggler(nullptr)
@@ -111,7 +96,6 @@ Session::Layout::Fullscreen::Fullscreen(QSettings &settings, Arbiter &arbiter)
 
 Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
     : scale(settings.value("Layout/scale", 1.0).toDouble())
-    , control_bar(settings, arbiter)
     , openauto_page(new OpenAutoPage(arbiter))
     , curr_page(nullptr)
     , fullscreen(settings, arbiter)
