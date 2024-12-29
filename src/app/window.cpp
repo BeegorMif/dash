@@ -19,15 +19,11 @@ Dash::NavRail::NavRail()
 
 Dash::Body::Body()
     : layout(new QVBoxLayout())
-    , status_bar(new QVBoxLayout())
     , frame(new QStackedLayout())
     , control_bar(new QVBoxLayout())
 {
     this->layout->setContentsMargins(0, 0, 0, 0);
     this->layout->setSpacing(0);
-
-    this->status_bar->setContentsMargins(0, 0, 0, 0);
-    this->layout->addLayout(this->status_bar);
 
     this->frame->setContentsMargins(0, 0, 0, 0);
     this->layout->addLayout(this->frame, 1);
@@ -75,8 +71,6 @@ Dash::Dash(Arbiter &arbiter)
 
 void Dash::init()
 {
-    this->body.status_bar->addWidget(this->status_bar());
-
     for (auto page : this->arbiter.layout().pages()) {
         auto button = page->button();
         button->setCheckable(true);
@@ -101,31 +95,6 @@ void Dash::set_page(Page *page)
     auto id = this->arbiter.layout().page_id(page);
     this->rail.group.button(id)->setChecked(true);
     this->body.frame->setCurrentWidget(page->container());
-}
-
-QWidget *Dash::status_bar() const
-{
-    auto widget = new QWidget();
-    widget->setObjectName("StatusBar");
-    auto layout = new QHBoxLayout(widget);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
-
-    auto clock = new QLabel();
-    clock->setFont(this->arbiter.forge().font(10, true));
-    clock->setAlignment(Qt::AlignCenter);
-    layout->addWidget(clock);
-
-    connect(&this->arbiter.system().clock, &Clock::ticked, [clock](QTime time){
-        clock->setText(QLocale().toString(time, QLocale::ShortFormat));
-    });
-
-    widget->setVisible(this->arbiter.layout().status_bar);
-    connect(&this->arbiter, &Arbiter::status_bar_changed, [widget](bool enabled){
-        widget->setVisible(enabled);
-    });
-
-    return widget;
 }
 
 QWidget *Dash::control_bar() const

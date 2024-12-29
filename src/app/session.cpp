@@ -111,7 +111,6 @@ Session::Layout::Fullscreen::Fullscreen(QSettings &settings, Arbiter &arbiter)
 
 Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
     : scale(settings.value("Layout/scale", 1.0).toDouble())
-    , status_bar(settings.value("Layout/status_bar", false).toBool())
     , control_bar(settings, arbiter)
     , openauto_page(new OpenAutoPage(arbiter))
     , curr_page(nullptr)

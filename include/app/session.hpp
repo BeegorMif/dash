@@ -90,7 +90,6 @@ class Session {
         };
 
         double scale;
-        bool status_bar;
         Fullscreen fullscreen;
         ControlBar control_bar;
         OpenAutoPage *openauto_page;
