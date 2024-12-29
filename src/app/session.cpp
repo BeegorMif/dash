@@ -225,7 +225,6 @@ const QList<QString> &Session::System::Brightness::plugins() const
 
 Session::System::System(QSettings &settings, Arbiter &arbiter)
     : clock()
-    , server(arbiter)
     , bluetooth(arbiter)
     , brightness(settings)
     , volume(settings.value("System/volume", 50).toUInt())

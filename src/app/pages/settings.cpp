@@ -17,7 +17,6 @@
 #include "app/session.hpp"
 #include "app/window.hpp"
 #include "app/pages/settings.hpp"
-#include "app/services/server.hpp"
 #include "app/widgets/color_picker.hpp"
 #include "app/widgets/selector.hpp"
 #include "app/widgets/switch.hpp"
@@ -63,8 +62,6 @@ QWidget *MainSettingsTab::settings_widget()
     layout->addWidget(this->volume_row_widget(), 1);
     layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->brightness_row_widget(), 1);
-    layout->addWidget(Session::Forge::br(), 1);
-    layout->addWidget(this->server_row_widget(), 1);
     layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->controls_row_widget(), 1);
 
@@ -183,29 +180,6 @@ QWidget *MainSettingsTab::volume_row_widget()
     layout->addWidget(label, 1);
 
     layout->addWidget(this->arbiter.forge().volume_slider(), 1);
-
-    return widget;
-}
-
-QWidget *MainSettingsTab::server_row_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-
-    QLabel *label = new QLabel("Server", widget);
-    layout->addWidget(label, 1);
-
-    Switch *toggle = new Switch(widget);
-    toggle->scale(this->arbiter.layout().scale);
-    toggle->setChecked(this->arbiter.system().server.enabled());
-    connect(&this->arbiter.system().server, &Server::changed, [toggle](bool enabled){
-        toggle->setChecked(enabled);
-    });
-    connect(toggle, &Switch::stateChanged, [this](bool state){
-        this->arbiter.system().server.enable(state);
-    });
-
-    layout->addWidget(toggle, 1, Qt::AlignHCenter);
 
     return widget;
 }
