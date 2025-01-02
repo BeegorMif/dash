@@ -1,4 +1,4 @@
-#include "lights.hpp"
+#include "bmw_f20.hpp"
 
 bool BMWF20::init(ICANBus* canbus){
     if (this->arbiter) {
@@ -44,7 +44,6 @@ QList<QWidget *> BMWF20::widgets()
 
 void BMWF20::headlightUpdate(QByteArray payload){
     this->debug->headlightState->setText(QString::number((uint8_t)payload.at(0)));
-    DASH_LOG(info) << "GOT CAN DATA";
 }
 
 // HEADLIGHTS AND DOORS
