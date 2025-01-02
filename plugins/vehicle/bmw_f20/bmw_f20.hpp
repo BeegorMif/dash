@@ -10,7 +10,7 @@
 #include "openauto/Service/InputService.hpp"
 
 
-#define F20_LOG(severity) BOOST_LOG_TRIVIAL(severity) << "[F20LightsVehiclePlugin] "
+#define F20_LOG(severity) BOOST_LOG_TRIVIAL(severity) << "[F20Plugin] "
 
 
 class DebugWindow : public QWidget {
@@ -18,8 +18,8 @@ class DebugWindow : public QWidget {
 
     public:
         DebugWindow(Arbiter &arbiter, QWidget *parent = nullptr);
-        QLabel* headlightStatus;
         QLabel * headlightState;
+        QLabel * reverseState;
 };
 
 class BMWF20 : public QObject, VehiclePlugin
@@ -34,7 +34,6 @@ class BMWF20 : public QObject, VehiclePlugin
     private:
         QList<QWidget *> widgets() override;
 
-        void monitorHeadlightStatus(QByteArray payload);
         void headlightUpdate(QByteArray payload);
 
         DebugWindow *debug;

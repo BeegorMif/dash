@@ -5,7 +5,6 @@ bool BMWF20::init(ICANBus* canbus){
         this->debug = new DebugWindow(*this->arbiter);
 
         canbus->registerFrameHandler(0x21A, [this](QByteArray payload){
-            this->monitorHeadlightStatus(payload);
             this->headlightUpdate(payload);
             });
 
@@ -42,10 +41,6 @@ QList<QWidget *> BMWF20::widgets()
 
 // OTHERS UNKNOWN
 
-void BMWF20::headlightUpdate(QByteArray payload){
-    this->debug->headlightState->setText(QString::number((uint8_t)payload.at(0)));
-}
-
 // HEADLIGHTS AND DOORS
 // 21A
 // FIRST BYTE:
@@ -54,7 +49,8 @@ void BMWF20::headlightUpdate(QByteArray payload){
 // |unknown|unknown|AUTO|unknown|unknown|unknown|unknown|unknown|
 // OTHERS UNKNOWN
 
-void BMWF20::monitorHeadlightStatus(QByteArray payload){
+void BMWF20::headlightUpdate(QByteArray payload){
+    this->debug->headlightState->setText(QString::number((uint8_t)payload.at(0)));
     if((payload.at(0)>>0) & 1){
         //headlights are ON - turn to dark mode
         if(this->arbiter->theme().mode == Session::Theme::Light){
@@ -71,17 +67,22 @@ void BMWF20::monitorHeadlightStatus(QByteArray payload){
 
 DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
 {
-    this->setObjectName("Headlight Debug");
+    this->setObjectName("F20 Debug");
 
 
-    QLabel* textOne = new QLabel("Payload Lights", this);
+    QLabel* lights = new QLabel("Light Status", this);
+    QLabel* reverse = new QLabel("Reverse Gear", this);
 
     headlightState = new QLabel("--", this);
+    reverseState = new QLabel("--", this);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    layout->addWidget(textOne);
+    layout->addWidget(lights);
     layout->addWidget(headlightState);
+    layout->addWidget(Session::Forge::br(false));
+    layout->addWidget(reverse);
+    layout->addWidget(reverseState);
     layout->addWidget(Session::Forge::br(false));
 
 }
