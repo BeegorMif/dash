@@ -4,9 +4,8 @@ bool BMWF20::init(ICANBus* canbus){
     if (this->arbiter) {
         this->debug = new DebugWindow(*this->arbiter);
 
-        canbus->registerFrameHandler(0x21A, [this](QByteArray payload){
-            this->headlightUpdate(payload);
-            });
+        canbus->registerFrameHandler(0x21A, [this](QByteArray payload){this->headlightUpdate(payload);});
+        canbus->registerFrameHandler(0x3B0, [this](QByteArray payload){this->reverseUpdate(payload);});
 
 
         DASH_LOG(info)<<"loaded successfully";
@@ -63,6 +62,21 @@ void BMWF20::headlightUpdate(QByteArray payload){
             this->arbiter->set_mode(Session::Theme::Light);
         }
     }
+}
+
+void BMWF20::reverseUpdate(QByteArray payload)
+{
+    this->debug->reverseState->setText(QString::number((uint8_t)payload.at(0)));
+    if((payload.at(0)>>0) & 1){
+        DASH_LOG(debug) << "[FUNCTION] Reverse gear selected.";
+        //reverse gear selected, switch to camera page
+        this->arbiter->set_curr_page(3);
+    }
+    else{
+        DASH_LOG(debug) << "[FUNCTION] Reverse gear deselected.";
+        //not in reverse, switch to Android Auto
+        this->arbiter->set_curr_page(0);
+        }
 }
 
 DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)

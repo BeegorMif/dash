@@ -35,6 +35,7 @@ class BMWF20 : public QObject, VehiclePlugin
         QList<QWidget *> widgets() override;
 
         void headlightUpdate(QByteArray payload);
+        void reverseUpdate(QByteArray Payload);
 
         DebugWindow *debug;
 };
