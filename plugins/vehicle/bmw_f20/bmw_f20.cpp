@@ -181,12 +181,12 @@ void Test::reverseUpdate(QByteArray payload)
 {
     this->debug->reverseState->setText(QString::number((uint8_t)payload.at(0)));
     if((payload.at(0)>>0) & 1){
-        DASH_LOG(debug) << "[FUNCTION] Reverse gear selected.";
+        this->debug->reverseState_readable->setText("In Reverse");
         //reverse gear selected, switch to camera page
         this->arbiter->set_curr_page(3);
     }
     else{
-        DASH_LOG(debug) << "[FUNCTION] Reverse gear deselected.";
+        this->debug->reverseState_readable->setText("Not Reverse");
         //not in reverse, switch to Android Auto
         this->arbiter->set_curr_page(0);
         }
@@ -195,21 +195,30 @@ void Test::reverseUpdate(QByteArray payload)
 DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
 {
     this->setObjectName("Debug");
-
-
+// HEADLIGHTS
+    QWidget *lights_row = new QWidget(this);
+    QHBoxLayout *lights_row_layout = new QHBoxLayout(lights_row);
     QLabel* lights = new QLabel("Light Status", this);
-    QLabel* reverse = new QLabel("Reverse Gear", this);
-
     lightState = new QLabel("--", this);
+    lightState_readable = new QLabel("--", this);
+    lights_row_layout->addWidget(lights);
+    lights_row_layout->addWidget(lightState);
+    lights_row_layout->addWidget(lightState_readable);
+
+// REVERSE
+    QWidget *reverse_row = new QWidget(this);
+    QHBoxLayout *reverse_row_layout = new QHBoxLayout(reverse_row);
+    QLabel* reverse = new QLabel("Reverse Status", this);
     reverseState = new QLabel("--", this);
+    reverseState_readable = new QLabel("--", this);
+    reverse_row_layout->addWidget(reverse);
+    reverse_row_layout->addWidget(reverseState);
+    reverse_row_layout->addWidget(reverseState_readable);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    layout->addWidget(lights);
-    layout->addWidget(lightState);
+    layout->addWidget(lights_row);
     layout->addWidget(Session::Forge::br(false));
-
-    layout->addWidget(reverse); 
-    layout->addWidget(reverseState);
+    layout->addWidget(reverse_row); 
     layout->addWidget(Session::Forge::br(false));
 }

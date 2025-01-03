@@ -13,7 +13,9 @@ class DebugWindow : public QWidget {
     public:
         DebugWindow(Arbiter &arbiter, QWidget *parent = nullptr);
         QLabel * lightState;
+        QLabel * lightState_readable;
         QLabel * reverseState;
+        QLabel * reverseState_readable;
 
 };
 class Test : public QObject, VehiclePlugin {
