@@ -28,6 +28,7 @@ class Test : public QObject, VehiclePlugin {
     ~Test();
     QList<QWidget *> widgets() override;
     bool init(ICANBus*) override;
+    bool previous_value = false;
 
    private:
     Climate *climate;

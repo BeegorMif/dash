@@ -23,9 +23,10 @@ QList<QWidget *> Test::widgets()
     return tabs;
 }
 
-bool Test::init(ICANBus* canbus)
+bool Test::init(ICANBus *canbus)
 {
-    if (this->arbiter) {
+    if (this->arbiter)
+    {
         this->debug = new DebugWindow(*this->arbiter);
         this->vehicle = new Vehicle(*this->arbiter);
         this->vehicle->pressure_init("psi", 35);
@@ -35,11 +36,14 @@ bool Test::init(ICANBus* canbus)
         this->climate = new Climate(*this->arbiter);
         this->climate->max_fan_speed(4);
 
-        canbus->registerFrameHandler(0x21A, [this](QByteArray payload){this->headlightUpdate(payload);});
-        canbus->registerFrameHandler(0x3B0, [this](QByteArray payload){this->reverseUpdate(payload);});
+        canbus->registerFrameHandler(0x21A, [this](QByteArray payload)
+                                     { this->headlightUpdate(payload); });
+        canbus->registerFrameHandler(0x3B0, [this](QByteArray payload)
+                                     { this->reverseUpdate(payload); });
 
         auto timer = new QTimer(this);
-        connect(timer, &QTimer::timeout, [this]{
+        connect(timer, &QTimer::timeout, [this]
+                {
             static bool toggle = false;
 
             switch(rand() % 50) {
@@ -139,17 +143,16 @@ bool Test::init(ICANBus* canbus)
                 default:
                     toggle = !toggle;
                     break;
-            }
-        });
+            } });
         // timer->start(1000);
 
         auto timer2 = new QTimer(this);
-        connect(timer2, &QTimer::timeout, [this]{
+        connect(timer2, &QTimer::timeout, [this]
+                {
             if (rand() % 10 == 1) {
                 this->climate->left_temp((rand() % 20) + 60);
                 this->climate->right_temp((rand() % 20) + 60);
-            }
-        });
+            } });
         // timer2->start(1000);
 
         return true;
@@ -161,17 +164,21 @@ bool Test::init(ICANBus* canbus)
 void Test::headlightUpdate(QByteArray payload)
 {
     this->debug->lightState->setText(QString::number((uint8_t)payload.at(0)));
-    if((payload.at(0)>>0) & 1){
+    if ((payload.at(0) >> 0) & 1)
+    {
         this->vehicle->headlights(true);
-        //headlights are ON - turn to dark mode
-        if(this->arbiter->theme().mode == Session::Theme::Light){
+        // headlights are ON - turn to dark mode
+        if (this->arbiter->theme().mode == Session::Theme::Light)
+        {
             this->arbiter->set_mode(Session::Theme::Dark);
         }
     }
-    else{
+    else
+    {
         this->vehicle->headlights(false);
-        //headlights are off or not fully on (i.e. sidelights only) - make sure is light mode
-        if(this->arbiter->theme().mode == Session::Theme::Dark){
+        // headlights are off or not fully on (i.e. sidelights only) - make sure is light mode
+        if (this->arbiter->theme().mode == Session::Theme::Dark)
+        {
             this->arbiter->set_mode(Session::Theme::Light);
         }
     }
@@ -179,36 +186,50 @@ void Test::headlightUpdate(QByteArray payload)
 
 void Test::reverseUpdate(QByteArray payload)
 {
+    bool in_reverse = ((payload.at(0) >> 1) & 1) ? true : false;
     this->debug->reverseState->setText(QString::number((uint8_t)payload.at(0)));
-    if((payload.at(0)>>1) & 1){
-        this->debug->reverseState_readable->setText("In Reverse");
-        //reverse gear selected, switch to camera page
-        this->arbiter->set_curr_page(3);
-    }
-    else{
-        this->debug->reverseState_readable->setText("Not Reverse");
-        //not in reverse, switch to Android Auto
-        this->arbiter->set_curr_page(0);
+    // DASH_LOG(debug) << QStringLiteral("Previous Value: %1.").arg(previous_value);
+    // DASH_LOG(debug) << QStringLiteral("New Value: %1.").arg(QString::number((uint8_t)payload.at(0)));
+    // Check the state is different
+    if(previous_value == in_reverse) {
+        // DASH_LOG(debug) << "New value is the same as old, skipping";
+        return;
+    } else {
+        if ((payload.at(0) >> 1) & 1)
+        {
+            this->debug->reverseState_readable->setText("In Reverse");
+            previous_value = true;
+            // reverse gear selected, switch to camera page
+            this->arbiter->set_curr_page(3);
         }
+        else
+        {
+            previous_value = false;
+            this->debug->reverseState_readable->setText("Not Reverse");
+            // not in reverse, switch to Android Auto
+            this->arbiter->set_curr_page(0);
+        }
+
+    }
 }
 
 DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
 {
     this->setObjectName("Debug");
-// HEADLIGHTS
+    // HEADLIGHTS
     QWidget *lights_row = new QWidget(this);
     QHBoxLayout *lights_row_layout = new QHBoxLayout(lights_row);
-    QLabel* lights = new QLabel("Light Status", this);
+    QLabel *lights = new QLabel("Light Status", this);
     lightState = new QLabel("--", this);
     lightState_readable = new QLabel("--", this);
     lights_row_layout->addWidget(lights);
     lights_row_layout->addWidget(lightState);
     lights_row_layout->addWidget(lightState_readable);
 
-// REVERSE
+    // REVERSE
     QWidget *reverse_row = new QWidget(this);
     QHBoxLayout *reverse_row_layout = new QHBoxLayout(reverse_row);
-    QLabel* reverse = new QLabel("Reverse Status", this);
+    QLabel *reverse = new QLabel("Reverse Status", this);
     reverseState = new QLabel("--", this);
     reverseState_readable = new QLabel("--", this);
     reverse_row_layout->addWidget(reverse);
@@ -219,6 +240,6 @@ DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
 
     layout->addWidget(lights_row);
     layout->addWidget(Session::Forge::br(false));
-    layout->addWidget(reverse_row); 
+    layout->addWidget(reverse_row);
     layout->addWidget(Session::Forge::br(false));
 }
