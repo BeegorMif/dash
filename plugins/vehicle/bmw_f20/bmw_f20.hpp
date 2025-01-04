@@ -16,7 +16,7 @@ class DebugWindow : public QWidget {
         QLabel * lightState_readable;
         QLabel * reverseState;
         QLabel * reverseState_readable;
-        QLabel * lockingState;
+
 };
 class Test : public QObject, VehiclePlugin {
     Q_OBJECT

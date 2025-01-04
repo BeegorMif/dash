@@ -2,8 +2,6 @@
 #include <QTimer>
 
 #include "bmw_f20.hpp"
-#include "app/config.hpp"
-#include "canbus/ICANBus.hpp"
 
 Test::~Test()
 {
@@ -196,12 +194,8 @@ void Test::reverseUpdate(QByteArray payload)
 
 DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
 {
-    Config *config = Config::get_instance();
-    ICANBus *bus;
-    bus = (ICANBus *)SocketCANBus::get_instance();
-
     this->setObjectName("Debug");
-// HEADLIGHTSt
+// HEADLIGHTS
     QWidget *lights_row = new QWidget(this);
     QHBoxLayout *lights_row_layout = new QHBoxLayout(lights_row);
     QLabel* lights = new QLabel("Light Status", this);
@@ -223,29 +217,8 @@ DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    QWidget *locking_row = new QWidget(this);
-    QHBoxLayout *locking_row_layout = new QHBoxLayout(locking_row);
-    QLabel* locking = new QLabel("Central Locking", this);
-    lockingState = new QLabel("Unlock", this);
-    QPushButton *lockingState_unlock = new QPushButton(locking_row);
-    connect(lockingState_unlock, &QPushButton::clicked, [bus]{
-                bus->writeFrame(QCanBusFrame(0x2A0, QByteArray::fromHex("1111F80DFFFFFFFF"))); });
-    lockingState = new QLabel("Lock", this);
-    QPushButton *lockingState_lock = new QPushButton(locking_row);
-    connect(lockingState_lock, &QPushButton::clicked, [bus]{ 
-        bus->writeFrame(QCanBusFrame(0x2A0, QByteArray::fromHex("2222F80DFFFFFFFF"))); });
-
-    locking_row_layout->addWidget(locking);
-    locking_row_layout->addWidget(lockingState_lock);
-    locking_row_layout->addWidget(lockingState_unlock);
-
-
     layout->addWidget(lights_row);
     layout->addWidget(Session::Forge::br(false));
     layout->addWidget(reverse_row); 
     layout->addWidget(Session::Forge::br(false));
-    layout->addWidget(locking_row); 
-    layout->addWidget(Session::Forge::br(false));
-    
-    
 }
