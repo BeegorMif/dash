@@ -180,7 +180,7 @@ void Test::headlightUpdate(QByteArray payload)
 void Test::reverseUpdate(QByteArray payload)
 {
     this->debug->reverseState->setText(QString::number((uint8_t)payload.at(0)));
-    if((payload.at(0)>>0) & 1){
+    if((payload.at(0)>>1) & 1){
         this->debug->reverseState_readable->setText("In Reverse");
         //reverse gear selected, switch to camera page
         this->arbiter->set_curr_page(3);
