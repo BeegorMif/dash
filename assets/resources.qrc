@@ -49,6 +49,7 @@
         <file>icons/defrost.svg</file>
         <file>icons/light/check.svg</file>
         <file>icons/dark/check.svg</file>
+        <file>icons/screen_off.svg</file>
         <file>stylesheets/light.qss</file>
         <file>stylesheets/dark.qss</file>
         <file>logo.png</file>

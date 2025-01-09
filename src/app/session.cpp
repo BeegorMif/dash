@@ -17,6 +17,7 @@
 #include "app/pages/launcher.hpp"
 #include "app/pages/media.hpp"
 #include "app/pages/settings.hpp"
+#include "app/pages/blackout.hpp"
 #include "app/utilities/icon_engine.hpp"
 #include "plugins/brightness_plugin.hpp"
 #include "aasdk_proto/ButtonCodeEnum.pb.h"
@@ -106,7 +107,8 @@ Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
         new VehiclePage(arbiter),
         new CameraPage(arbiter),
         new LauncherPage(arbiter),
-        new SettingsPage(arbiter)
+        new SettingsPage(arbiter),
+        new BlackoutPage(arbiter)
     };
 
     settings.beginGroup("Layout");
