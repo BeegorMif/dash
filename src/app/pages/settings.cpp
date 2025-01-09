@@ -3,7 +3,6 @@
 #include <QLabel>
 #include <QLayoutItem>
 #include <QScrollArea>
-#include <QPushButton>
 
 #include <aasdk_proto/ButtonCodeEnum.pb.h>
 #include <aasdk_proto/VideoFPSEnum.pb.h>
@@ -56,9 +55,6 @@ QWidget *MainSettingsTab::settings_widget()
     QVBoxLayout *layout = new QVBoxLayout(widget);
 
     layout->addWidget(this->dark_mode_row_widget(), 1);
-    layout->addWidget(Session::Forge::br(), 1);
-    layout->addWidget(this->blank_mode_row_widget(), 1);
-    layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->color_row_widget(), 1);
     layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->cursor_row_widget(), 1);
@@ -99,42 +95,7 @@ QWidget *MainSettingsTab::dark_mode_row_widget()
 
     return widget;
 }
-QWidget *MainSettingsTab::blank_mode_row_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-    QLabel *label = new QLabel("Blank Screen", widget);
-    layout->addWidget(label, 1);
 
-    QPushButton *button = new QPushButton("Enable", this);
-    connect(button, &QPushButton::clicked, [this]{
-        this->blank_mode_widget();
-    });
-    layout->addWidget(button, 1, Qt::AlignHCenter);
-
-    return widget;
-}
-QWidget *MainSettingsTab::blank_mode_widget()
-{
-    QDialog *blankDialog = new QDialog();
-    blankDialog->setWindowFlags(Qt::Window);
-    blankDialog->setWindowFlags(Qt::FramelessWindowHint);
-    blankDialog->setAttribute(Qt::WA_StyledBackground, true);
-    blankDialog->setStyleSheet("background-color: black");
-    blankDialog->setWindowState(Qt::WindowFullScreen);
-    QPushButton *close = new QPushButton();
-    QPushButton *button = new QPushButton("", this);
-    button->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        connect(button, &QPushButton::clicked, [this, blankDialog]() {
-            blankDialog->close();
-            this->arbiter.set_curr_page(0);
-        });
-    QVBoxLayout *VLayout = new QVBoxLayout(this);
-    VLayout->addWidget(button, 1);
-    blankDialog->setLayout(VLayout);
-    blankDialog->showFullScreen();
-    
-}
 QWidget *MainSettingsTab::brightness_row_widget()
 {
     QWidget *widget = new QWidget(this);
