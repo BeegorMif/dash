@@ -17,7 +17,7 @@
 #include "app/pages/launcher.hpp"
 #include "app/pages/media.hpp"
 #include "app/pages/settings.hpp"
-#include "app/quick_views/combo.hpp"
+#include "app/pages/blackout.hpp"
 #include "app/utilities/icon_engine.hpp"
 #include "plugins/brightness_plugin.hpp"
 #include "aasdk_proto/ButtonCodeEnum.pb.h"
@@ -81,20 +81,6 @@ QPalette Session::Theme::palette() const
     return palette;
 }
 
-Session::Layout::ControlBar::ControlBar(QSettings &settings, Arbiter &arbiter)
-    : enabled(settings.value("Layout/ControlBar/enabled", true).toBool())
-    , curr_quick_view(nullptr)
-{
-    this->quick_views_ = {
-        new NullQuickView(arbiter),
-        new VolumeQuickView(arbiter),
-        new BrightnessQuickView(arbiter),
-        new ComboQuickView(arbiter)
-    };
-
-    this->curr_quick_view = this->quick_views_.value(settings.value("Layout/ControlBar/quick_view", 0).toInt());
-}
-
 Session::Layout::Fullscreen::Fullscreen(QSettings &settings, Arbiter &arbiter)
     : enabled(false)
     , curr_toggler(nullptr)
@@ -111,8 +97,6 @@ Session::Layout::Fullscreen::Fullscreen(QSettings &settings, Arbiter &arbiter)
 
 Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
     : scale(settings.value("Layout/scale", 1.0).toDouble())
-    , status_bar(settings.value("Layout/status_bar", false).toBool())
-    , control_bar(settings, arbiter)
     , openauto_page(new OpenAutoPage(arbiter))
     , curr_page(nullptr)
     , fullscreen(settings, arbiter)
@@ -123,7 +107,8 @@ Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
         new VehiclePage(arbiter),
         new CameraPage(arbiter),
         new LauncherPage(arbiter),
-        new SettingsPage(arbiter)
+        new SettingsPage(arbiter),
+        new BlackoutPage(arbiter)
     };
 
     settings.beginGroup("Layout");
@@ -225,7 +210,6 @@ const QList<QString> &Session::System::Brightness::plugins() const
 
 Session::System::System(QSettings &settings, Arbiter &arbiter)
     : clock()
-    , server(arbiter)
     , bluetooth(arbiter)
     , brightness(settings)
     , volume(settings.value("System/volume", 50).toUInt())
@@ -309,7 +293,7 @@ QWidget *Session::Forge::brightness_slider(bool buttons) const
     auto widget = new QWidget();
     auto layout = new QHBoxLayout(widget);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
+    layout->setSpacing(1);
 
     if (buttons) {
         auto dim_button = new QPushButton();
@@ -324,12 +308,12 @@ QWidget *Session::Forge::brightness_slider(bool buttons) const
 
         auto max_button = new QPushButton();
         max_button->setFlat(true);
-        this->setText("Max")
+        max_button->setText("Max");
         QObject::connect(max_button, &QPushButton::clicked, [this]{ this->arbiter_.max_brightness(); });
 
         auto min_button = new QPushButton();
         min_button->setFlat(true);
-        this->setText("Min");
+        min_button->setText("Min");
         QObject::connect(min_button, &QPushButton::clicked, [this]{ this->arbiter_.min_brightness(); });
 
         layout->addWidget(dim_button);
@@ -338,7 +322,7 @@ QWidget *Session::Forge::brightness_slider(bool buttons) const
         layout->addWidget(max_button);
     }
 
-    layout->insertWidget(1, 4);
+    // layout->insertWidget(1, 4);
 
     return widget;
 }

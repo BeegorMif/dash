@@ -5,7 +5,10 @@
 /lib
 /nbproject
 /cmake-build-debug
-
+/h264bitstream
+/aasdk
+/qt-gstreamer
+/openauto
 # Compiled source #
 ###################
 *.com
@@ -66,5 +69,6 @@ openauto.ini
 # Plugins #
 ###########
 plugins/vehicle/*
+!plugins/vehicle/bmw_f20
 !plugins/vehicle/test
 !plugins/vehicle/README.md
