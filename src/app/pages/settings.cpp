@@ -114,8 +114,6 @@ QWidget *MainSettingsTab::brightness_widget()
     QWidget *widget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(widget);
 
-    connect(selector, &Selector::item_changed, [this](QString item){ this->arbiter.set_brightness_plugin(item); });
-
     layout->addWidget(this->arbiter.forge().brightness_slider());
 
     return widget;
