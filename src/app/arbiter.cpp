@@ -171,21 +171,6 @@ void Arbiter::set_fullscreen_on_start(bool enabled)
     emit fullscreen_on_start_changed(enabled);
 }
 
-void Arbiter::set_brightness_plugin(QString plugin)
-{
-    if (!(this->system().brightness.plugins().contains(plugin) || (plugin == Session::System::Brightness::AUTO_PLUGIN)))
-        return;
-
-    this->system().brightness.plugin = plugin;
-    this->settings().setValue("System/Brightness/plugin", plugin);
-
-    this->system().brightness.reset();
-    this->system().brightness.load();
-    this->system().brightness.set();
-
-    emit brightness_plugin_changed(plugin);
-}
-
 void Arbiter::set_brightness(uint8_t brightness)
 {
     this->system().brightness.value = brightness;

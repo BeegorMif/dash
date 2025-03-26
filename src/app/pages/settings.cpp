@@ -117,11 +117,8 @@ QWidget *MainSettingsTab::brightness_widget()
     QWidget *widget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(widget);
 
-    auto plugins = this->arbiter.system().brightness.plugins();
-    Selector *selector = new Selector(plugins, this->arbiter.system().brightness.plugin, this->arbiter.forge().font(14), this->arbiter, widget, Session::System::Brightness::AUTO_PLUGIN);
     connect(selector, &Selector::item_changed, [this](QString item){ this->arbiter.set_brightness_plugin(item); });
 
-    layout->addWidget(selector);
     layout->addWidget(this->arbiter.forge().brightness_slider());
 
     return widget;
