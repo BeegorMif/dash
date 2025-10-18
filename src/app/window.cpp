@@ -4,6 +4,7 @@
 
 #include "app/utilities/icon_engine.hpp"
 #include "app/widgets/dialog.hpp"
+#include "app/usb_monitor.hpp"
 
 #include "app/window.hpp"
 
@@ -62,7 +63,7 @@ Dash::Dash(Arbiter &arbiter)
 
         if ((this->arbiter.layout().curr_page == page) && !enabled)
             this->arbiter.set_curr_page(this->arbiter.layout().next_enabled_page(page));
-    });
+    });    
 }
 
 void Dash::init()
@@ -82,6 +83,8 @@ void Dash::init()
         button->setVisible(page->enabled());
     }
     this->set_page(this->arbiter.layout().curr_page);
+    UsbMonitor *usbMonitor = new UsbMonitor();
+    usbMonitor->start();
 
 }
 
