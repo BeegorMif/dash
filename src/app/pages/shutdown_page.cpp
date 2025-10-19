@@ -1,52 +1,92 @@
 #include "app/pages/shutdown_page.hpp"
-#include "DashLog.hpp"
+#include <QFontDatabase>
+#include <QPalette>
+#include <QPixmap>
+#include <QGuiApplication>
+#include <QScreen>
 
 ShutdownPage::ShutdownPage(QWidget *parent)
-    : QWidget(parent), remaining(0)
+    : QWidget(parent)
+    , labelStatus(new QLabel("Phone Disconnected"))
+    , labelCountdown(new QLabel(""))
+    , buttonCancel(new QPushButton("Cancel"))
+    , timer(new QTimer(this))
+    , timeLeft(0)
 {
-    setStyleSheet("background-color: black; color: white;");
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    // ---- Window setup ----
+    this->setWindowFlag(Qt::FramelessWindowHint);
+    this->setAttribute(Qt::WA_DeleteOnClose);
+    this->setObjectName("ShutdownPage");
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setAlignment(Qt::AlignCenter);
+    this->setStyleSheet(R"(
+        QLabel {
+            color: lightgray;
+            font-size: 28px;
+        }
+        QPushButton {
+            background-color: #4fa8d2;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            font-size: 28px;
+            border-radius: 8px;
+        }
+        QPushButton:hover {
+            background-color: #62b6de;
+        }
+        QPushButton:pressed {
+            background-color: #3d97c2;
+        }
+    )");
 
-    label = new QLabel(this);
-    label->setAlignment(Qt::AlignCenter);
-    label->setStyleSheet("font-size: 48px;");
+    // ---- Layout ----
+    auto layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(20);
+    layout->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
 
-    cancelButton = new QPushButton("Cancel", this);
-    cancelButton->setStyleSheet("font-size: 24px; padding: 10px;");
-    connect(cancelButton, &QPushButton::clicked, this, &ShutdownPage::cancel);
+    QFont font("Montserrat", 18);
+    labelStatus->setFont(font);
+    labelCountdown->setFont(font);
+    labelStatus->setAlignment(Qt::AlignCenter);
+    labelCountdown->setAlignment(Qt::AlignCenter);
 
-    layout->addWidget(label);
-    layout->addWidget(cancelButton);
+    buttonCancel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    buttonCancel->setFixedHeight(100); // keep nice big touch size
 
-    timer = new QTimer(this);
+    layout->addWidget(labelStatus);
+    layout->addWidget(labelCountdown);
+
+    auto buttonLayout = new QHBoxLayout();
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(buttonCancel);
+    buttonLayout->addStretch();
+
+    // Stretch ratios: make the button take up 3/4 of the screen width
+    buttonLayout->setStretch(0, 1);
+    buttonLayout->setStretch(1, 3);
+    buttonLayout->setStretch(2, 1);
+    layout->addLayout(buttonLayout);
+
+    connect(buttonCancel, &QPushButton::clicked, this, &ShutdownPage::cancelled);
     connect(timer, &QTimer::timeout, this, &ShutdownPage::updateCountdown);
 }
 
 void ShutdownPage::startCountdown(int seconds)
 {
-    remaining = seconds;
-    label->setText(QString("Shutting down in %1 seconds...").arg(remaining));
+    timeLeft = seconds;
+    labelCountdown->setText(QString("Shutting down in %1").arg(timeLeft));
     timer->start(1000);
-    DASH_LOG(info) << "Shutdown countdown started";
 }
 
 void ShutdownPage::updateCountdown()
 {
-    remaining--;
-    label->setText(QString("Shutting down in %1 seconds...").arg(remaining));
-
-    if (remaining <= 0) {
+    if (--timeLeft <= 0) {
         timer->stop();
         emit countdownFinished();
+    } else {
+        labelCountdown->setText(QString("Shutting down in %1").arg(timeLeft));
     }
-}
-
-void ShutdownPage::cancel()
-{
-    DASH_LOG(info) << "Shutdown countdown cancelled";
-    timer->stop();
-    emit cancelled();
 }

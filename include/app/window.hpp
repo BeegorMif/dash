@@ -66,12 +66,13 @@ class MainWindow : public QMainWindow {
     void startShutdownCountdown();
     void cancelShutdownCountdown();
     void performShutdown();
-
-   private:
+    
+    private:
     Arbiter arbiter;
     QStackedWidget *stack;
     ShutdownPage *shutdownPage = nullptr;
     UsbMonitor *usbMonitor = nullptr;
+    QTimer *shutdownDelayTimer = nullptr;
 
     MainWindow *init(QRect geometry);
 };

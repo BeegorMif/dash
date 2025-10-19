@@ -189,21 +189,41 @@ void MainWindow::set_fullscreen(Page *page)
 
 void MainWindow::startShutdownCountdown()
 {
-    if (shutdownPage)
-        return;
+    if (shutdownDelayTimer) {
+        shutdownDelayTimer->stop();
+        delete shutdownDelayTimer;
+    }
 
-    shutdownPage = new ShutdownPage(this);
-    stack->addWidget(shutdownPage);
-    stack->setCurrentWidget(shutdownPage);
+    shutdownDelayTimer = new QTimer(this);
+    shutdownDelayTimer->setSingleShot(true);
+    shutdownDelayTimer->setInterval(2000); // 2 seconds delay
+    connect(shutdownDelayTimer, &QTimer::timeout, [this]() {
+        shutdownDelayTimer->deleteLater();
+        shutdownDelayTimer = nullptr;
 
-    connect(shutdownPage, &ShutdownPage::cancelled, this, &MainWindow::cancelShutdownCountdown);
-    connect(shutdownPage, &ShutdownPage::countdownFinished, this, &MainWindow::performShutdown);
+        if (shutdownPage) return;
 
-    shutdownPage->startCountdown(30);
+        shutdownPage = new ShutdownPage(this);
+        stack->addWidget(shutdownPage);
+        stack->setCurrentWidget(shutdownPage);
+        connect(shutdownPage, &ShutdownPage::cancelled, this, &MainWindow::cancelShutdownCountdown);
+        connect(shutdownPage, &ShutdownPage::countdownFinished, this, &MainWindow::performShutdown);
+
+        shutdownPage->startCountdown(30);
+    });
+
+    shutdownDelayTimer->start();
 }
 
 void MainWindow::cancelShutdownCountdown()
 {
+    // Cancel any pending delayed start
+    if (shutdownDelayTimer) {
+        shutdownDelayTimer->stop();
+        shutdownDelayTimer->deleteLater();
+        shutdownDelayTimer = nullptr;
+    }
+
     if (!shutdownPage)
         return;
 
@@ -221,5 +241,5 @@ void MainWindow::performShutdown()
 {
     DASH_LOG(info) << "Executing system shutdown";
     cancelShutdownCountdown();
-    QProcess::startDetached("systemctl poweroff");
+    QProcess::startDetached("sudo poweroff");
 }
