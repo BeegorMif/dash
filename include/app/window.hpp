@@ -14,6 +14,8 @@
 #include "app/config.hpp"
 #include "app/pages/openauto.hpp"
 #include "app/pages/page.hpp"
+#include "app/pages/shutdown_page.hpp"
+#include "app/usb_monitor.hpp"
 
 #include "app/arbiter.hpp"
 
@@ -60,9 +62,16 @@ class MainWindow : public QMainWindow {
    protected:
     void showEvent(QShowEvent *event) override;
 
+   private slots:
+    void startShutdownCountdown();
+    void cancelShutdownCountdown();
+    void performShutdown();
+
    private:
     Arbiter arbiter;
     QStackedWidget *stack;
+    ShutdownPage *shutdownPage = nullptr;
+    UsbMonitor *usbMonitor = nullptr;
 
     MainWindow *init(QRect geometry);
 };

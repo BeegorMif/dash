@@ -1,12 +1,19 @@
 #include <QHBoxLayout>
 #include <QLocale>
 #include <QPushButton>
+#include <QFrame>
+#include <QStackedWidget>
+#include <QTimer>
+#include <QProcess>
 
 #include "app/utilities/icon_engine.hpp"
 #include "app/widgets/dialog.hpp"
-#include "app/usb_monitor.hpp"
 
 #include "app/window.hpp"
+#include "app/usb_monitor.hpp"
+#include "app/pages/shutdown_page.hpp"
+
+// ---------------- Dash ----------------
 
 Dash::NavRail::NavRail()
     : group()
@@ -30,7 +37,6 @@ Dash::Body::Body()
     auto msg_ref = new QWidget();
     msg_ref->setObjectName("MsgRef");
     this->layout->addWidget(msg_ref);
-
 }
 
 Dash::Dash(Arbiter &arbiter)
@@ -63,7 +69,7 @@ Dash::Dash(Arbiter &arbiter)
 
         if ((this->arbiter.layout().curr_page == page) && !enabled)
             this->arbiter.set_curr_page(this->arbiter.layout().next_enabled_page(page));
-    });    
+    });
 }
 
 void Dash::init()
@@ -83,9 +89,6 @@ void Dash::init()
         button->setVisible(page->enabled());
     }
     this->set_page(this->arbiter.layout().curr_page);
-    UsbMonitor *usbMonitor = new UsbMonitor();
-    usbMonitor->start();
-
 }
 
 void Dash::set_page(Page *page)
@@ -125,10 +128,14 @@ QWidget *Dash::power_control() const
     return widget;
 }
 
+// ---------------- MainWindow ----------------
+
 MainWindow::MainWindow(QRect geometry)
     : QMainWindow()
     , arbiter(this->init(geometry))
     , stack(new QStackedWidget())
+    , shutdownPage(nullptr)
+    , usbMonitor(nullptr)
 {
     this->setAttribute(Qt::WA_TranslucentBackground, true);
 
@@ -150,11 +157,15 @@ MainWindow::MainWindow(QRect geometry)
 
     if (this->arbiter.layout().fullscreen.on_start)
         this->arbiter.set_fullscreen(true);
+
+    // ---- USB Monitor Thread ----
+    usbMonitor = new UsbMonitor(this);
+    connect(usbMonitor, &UsbMonitor::phoneDisconnected, this, &MainWindow::startShutdownCountdown);
+    connect(usbMonitor, &UsbMonitor::phoneConnected, this, &MainWindow::cancelShutdownCountdown);
 }
 
 MainWindow *MainWindow::init(QRect geometry)
 {
-    // force to either screen or custom size
     this->setFixedSize(geometry.size());
     this->move(geometry.topLeft());
 
@@ -172,4 +183,43 @@ void MainWindow::set_fullscreen(Page *page)
     auto widget = page->container()->take();
     this->stack->addWidget(widget);
     this->stack->setCurrentWidget(widget);
+}
+
+// ---------------- Shutdown Logic ----------------
+
+void MainWindow::startShutdownCountdown()
+{
+    if (shutdownPage)
+        return;
+
+    shutdownPage = new ShutdownPage(this);
+    stack->addWidget(shutdownPage);
+    stack->setCurrentWidget(shutdownPage);
+
+    connect(shutdownPage, &ShutdownPage::cancelled, this, &MainWindow::cancelShutdownCountdown);
+    connect(shutdownPage, &ShutdownPage::countdownFinished, this, &MainWindow::performShutdown);
+
+    shutdownPage->startCountdown(30);
+}
+
+void MainWindow::cancelShutdownCountdown()
+{
+    if (!shutdownPage)
+        return;
+
+    stack->removeWidget(shutdownPage);
+    shutdownPage->deleteLater();
+    shutdownPage = nullptr;
+
+    if (stack->count() > 0)
+        stack->setCurrentIndex(0);
+
+    DASH_LOG(info) << "Shutdown cancelled or phone reconnected";
+}
+
+void MainWindow::performShutdown()
+{
+    DASH_LOG(info) << "Executing system shutdown";
+    cancelShutdownCountdown();
+    QProcess::startDetached("systemctl poweroff");
 }

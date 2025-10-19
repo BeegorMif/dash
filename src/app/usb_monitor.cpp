@@ -1,11 +1,21 @@
 #include "app/usb_monitor.hpp"
 #include "DashLog.hpp"
 #include <libudev.h>
-// #include <QDebug>
 
-UsbMonitor::UsbMonitor(QObject *parent) : QThread(parent) {}
+UsbMonitor::UsbMonitor(QObject *parent)
+    : QThread(parent)
+{
+    start(); // Launch the thread
+}
 
-void UsbMonitor::run() {
+UsbMonitor::~UsbMonitor()
+{
+    requestInterruption();
+    wait();
+}
+
+void UsbMonitor::run()
+{
     struct udev *udev = udev_new();
     if (!udev) {
         DASH_LOG(error) << "UsbMonitor: Failed to create udev context";
@@ -23,8 +33,9 @@ void UsbMonitor::run() {
     udev_monitor_enable_receiving(mon);
 
     int fd = udev_monitor_get_fd(mon);
+    DASH_LOG(info) << "USB monitor thread started";
 
-    while (true) {
+    while (!isInterruptionRequested()) {
         fd_set fds;
         FD_ZERO(&fds);
         FD_SET(fd, &fds);
@@ -35,19 +46,12 @@ void UsbMonitor::run() {
             if (dev) {
                 const char *action = udev_device_get_action(dev);
                 const char *devnode = udev_device_get_devnode(dev);
-                const char *vendor = udev_device_get_sysattr_value(dev, "idVendor");
-                const char *product = udev_device_get_sysattr_value(dev, "idProduct");
 
                 QString devStr = devnode ? QString(devnode) : QString("unknown device");
-                QString vendorStr = vendor ? QString(vendor) : QString("unknown vendor");
-                QString productStr = product ? QString(product) : QString("unknown product");
 
-                // Filter for phones (common vendor IDs, optional)
-                // Example: Android phones (Google/Samsung/Huawei etc.)
-                bool isPhone = true; // For now, log all USB devices
-                if (isPhone && action && devnode) {
+                if (action && devnode) {
                     if (QString(action) == "add") {
-                        DASH_LOG(info) << "Phone connected: " << devStr.toStdString() << " Vendor: " << vendorStr.toStdString() << " Product: " << productStr.toStdString();
+                        DASH_LOG(info) << "Phone connected: " << devStr.toStdString();
                         emit phoneConnected(devStr);
                     } else if (QString(action) == "remove") {
                         DASH_LOG(info) << "Phone disconnected: " << devStr.toStdString();
@@ -62,4 +66,12 @@ void UsbMonitor::run() {
 
     udev_monitor_unref(mon);
     udev_unref(udev);
+}
+
+void UsbMonitor::handleDeviceEvent(const QString &device, bool connected)
+{
+    if (connected)
+        emit phoneConnected(device);
+    else
+        emit phoneDisconnected(device);
 }
