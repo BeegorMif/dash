@@ -40,14 +40,10 @@ QWidget *BlackoutPage::load_msg()
 void BlackoutPage::showEvent(QShowEvent *event)
 {
     QWidget::showEvent(event);
-    QProcess process(this);
-    process.startDetached(QString("sudo ddcutil setvcp D6 04"));
-    process.waitForFinished();
+    system(Session::System::SCREENBLANK_CMD);
 }
 void BlackoutPage::screenOn()
 {
     this->arbiter.set_curr_page(0);
-    QProcess process(this);
-    process.startDetached(QString("sudo ddcutil setvcp D6 01"));
-    process.waitForFinished();
+    system(Session::System::SCREENBLANK_OFF_CMD);
 }

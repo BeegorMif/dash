@@ -215,6 +215,7 @@ QWidget *MainSettingsTab::controls_widget()
     connect(shut_down_button, &QPushButton::clicked, [this]{
         this->arbiter.settings().sync();
         sync();
+        system(Session::System::SCREENBLANK_CMD);
         system(Session::System::SHUTDOWN_CMD);
     });
     layout->addWidget(shut_down_button);

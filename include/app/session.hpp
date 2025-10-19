@@ -94,6 +94,8 @@ class Session {
     struct System {
         static const char *VOLUME_CMD;
         static const char *SHUTDOWN_CMD;
+        static const char *SCREENBLANK_CMD;
+        static const char *SCREENBLANK_OFF_CMD;
         static const char *REBOOT_CMD;
 
         struct Brightness {

@@ -121,6 +121,7 @@ QWidget *Dash::power_control() const
     connect(power_off, &QPushButton::clicked, [this]{
         this->arbiter.settings().sync();
         sync();
+        system(Session::System::SCREENBLANK_CMD);
         system(Session::System::SHUTDOWN_CMD);
     });
     layout->addWidget(power_off);
@@ -241,5 +242,6 @@ void MainWindow::performShutdown()
 {
     DASH_LOG(info) << "Executing system shutdown";
     cancelShutdownCountdown();
-    QProcess::startDetached("sudo poweroff");
+    system(Session::System::SCREENBLANK_CMD);
+    system(Session::System::SHUTDOWN_CMD);
 }
