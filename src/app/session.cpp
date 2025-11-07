@@ -18,6 +18,7 @@
 #include "app/pages/media.hpp"
 #include "app/pages/settings.hpp"
 #include "app/pages/blackout.hpp"
+#include "app/pages/webview.hpp"
 #include "app/utilities/icon_engine.hpp"
 #include "plugins/brightness_plugin.hpp"
 #include "aasdk_proto/ButtonCodeEnum.pb.h"
@@ -108,7 +109,8 @@ Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
         new CameraPage(arbiter),
         new LauncherPage(arbiter),
         new SettingsPage(arbiter),
-        new BlackoutPage(arbiter)
+        new BlackoutPage(arbiter),
+        new WebviewPage(arbiter)
     };
 
     settings.beginGroup("Layout");
@@ -142,8 +144,8 @@ Page *Session::Layout::next_enabled_page(Page *page) const
 }
 
 const char *Session::System::VOLUME_CMD = "amixer set Master %1% --quiet";
-const char *Session::System::SCREENBLANK_CMD = "sudo ddcutil setvcp D6 01";
-const char *Session::System::SCREENBLANK_OFF_CMD = "sudo ddcutil setvcp D6 04";
+const char *Session::System::SCREENBLANK_CMD = "sudo ddcutil setvcp D6 04";
+const char *Session::System::SCREENBLANK_OFF_CMD = "sudo ddcutil setvcp D6 01";
 const char *Session::System::SHUTDOWN_CMD = "sudo shutdown -h --no-wall now";
 const char *Session::System::REBOOT_CMD = "sudo shutdown -r now";
 
