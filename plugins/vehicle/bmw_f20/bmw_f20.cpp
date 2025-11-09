@@ -36,8 +36,6 @@ bool Test::init(ICANBus *canbus)
         this->climate = new Climate(*this->arbiter);
         this->climate->max_fan_speed(4);
 
-        canbus->registerFrameHandler(0x21A, [this](QByteArray payload)
-                                     { this->headlightUpdate(payload); });
         canbus->registerFrameHandler(0x3B0, [this](QByteArray payload)
                                      { this->reverseUpdate(payload); });
 
@@ -161,29 +159,6 @@ bool Test::init(ICANBus *canbus)
     return false;
 }
 
-void Test::headlightUpdate(QByteArray payload)
-{
-    this->debug->lightState->setText(QString::number((uint8_t)payload.at(0)));
-    if ((payload.at(0) >> 0) & 1)
-    {
-        this->vehicle->headlights(true);
-        // headlights are ON - turn to dark mode
-        if (this->arbiter->theme().mode == Session::Theme::Light)
-        {
-            this->arbiter->set_mode(Session::Theme::Dark);
-        }
-    }
-    else
-    {
-        this->vehicle->headlights(false);
-        // headlights are off or not fully on (i.e. sidelights only) - make sure is light mode
-        if (this->arbiter->theme().mode == Session::Theme::Dark)
-        {
-            this->arbiter->set_mode(Session::Theme::Light);
-        }
-    }
-}
-
 void Test::reverseUpdate(QByteArray payload)
 {
     bool in_reverse = ((payload.at(0) >> 1) & 1) ? true : false;
@@ -216,15 +191,6 @@ void Test::reverseUpdate(QByteArray payload)
 DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
 {
     this->setObjectName("Debug");
-    // HEADLIGHTS
-    QWidget *lights_row = new QWidget(this);
-    QHBoxLayout *lights_row_layout = new QHBoxLayout(lights_row);
-    QLabel *lights = new QLabel("Light Status", this);
-    lightState = new QLabel("--", this);
-    lightState_readable = new QLabel("--", this);
-    lights_row_layout->addWidget(lights);
-    lights_row_layout->addWidget(lightState);
-    lights_row_layout->addWidget(lightState_readable);
 
     // REVERSE
     QWidget *reverse_row = new QWidget(this);
