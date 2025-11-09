@@ -596,14 +596,6 @@ QWidget *AboutSettingsTab::load_msg()
     label2->setAlignment(Qt::AlignCenter);
     QLabel *label3 = new QLabel(BUILD_TIMESTAMP, widget);
     label3->setAlignment(Qt::AlignCenter);
-    QProcess process;
-    process.start("vcgencmd measure_temp");
-    process.waitForFinished(-1); // will wait forever until finished
-    QString responseString = QString(process.readAllStandardOutput());
-    QLabel *label4 = new QLabel(QString("CPU Temperature: %1").arg(responseString));
-    label4->setAlignment(Qt::AlignCenter);
-
-
 
     layout->addStretch();
     layout->addWidget(this->logo);
