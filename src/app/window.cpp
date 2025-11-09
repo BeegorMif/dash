@@ -210,7 +210,7 @@ void MainWindow::startShutdownCountdown()
         connect(shutdownPage, &ShutdownPage::cancelled, this, &MainWindow::cancelShutdownCountdown);
         connect(shutdownPage, &ShutdownPage::countdownFinished, this, &MainWindow::performShutdown);
 
-        shutdownPage->startCountdown(30);
+        shutdownPage->startCountdown(10);
     });
 
     shutdownDelayTimer->start();
