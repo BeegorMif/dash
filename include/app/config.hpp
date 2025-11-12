@@ -109,19 +109,6 @@ class Config : public QObject {
         this->settings.setValue("Pages/OpenAuto/show_aa_connected", this->show_aa_connected);
     }
 
-    inline const QStringList &get_launcher_plugins() { return this->launcher_plugins; }
-    inline void set_launcher_plugin(QString plugin, bool remove = false)
-    {
-        if (remove)
-            this->launcher_plugins.removeOne(plugin);
-        else
-            this->launcher_plugins.append(plugin);
-
-        // need to sync idxs
-        this->settings.remove("Pages/Launcher");
-        for (int i = 0; i < this->launcher_plugins.size(); i++)
-            this->settings.setValue(QString("Pages/Launcher/%1").arg(i), this->launcher_plugins[i]);
-    }
 
     static Config *get_instance();
 
@@ -139,7 +126,6 @@ class Config : public QObject {
     int cam_overlay_width;
     int cam_overlay_height;
     bool show_aa_connected;
-    QStringList launcher_plugins;
 
    signals:
     void si_units_changed(bool si_units);

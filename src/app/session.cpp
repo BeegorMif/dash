@@ -13,7 +13,6 @@
 
 #include "app/arbiter.hpp"
 #include "app/pages/camera.hpp"
-#include "app/pages/launcher.hpp"
 #include "app/pages/media.hpp"
 #include "app/pages/settings.hpp"
 #include "app/pages/blackout.hpp"
@@ -105,7 +104,6 @@ Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
         this->openauto_page,
         new MediaPage(arbiter),
         new CameraPage(arbiter),
-        new LauncherPage(arbiter),
         new SettingsPage(arbiter),
         new BlackoutPage(arbiter),
         new WebviewPage(arbiter)
