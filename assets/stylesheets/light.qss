@@ -272,10 +272,6 @@ StepMeter {
     qproperty-bar_color: palette(base);
 }
 
-ClimateState {
-    qproperty-color: rgb(0, 0, 0);
-}
-
 VehicleState {
     qproperty-base_color: rgb(0, 0, 0);
     qproperty-headlight_color: #03A9F4;

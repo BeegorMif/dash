@@ -1,7 +1,6 @@
 #pragma once
 
 #include "openauto/Configuration/Configuration.hpp"
-#include "canbus/ICANBus.hpp"
 
 #include <QObject>
 #include <QSettings>
@@ -38,35 +37,6 @@ class Config : public QObject {
         this->si_units = si_units;
         this->settings.setValue("Pages/Vehicle/si_units", this->si_units);
         emit si_units_changed(this->si_units);
-    }
-
-    inline ICANBus::VehicleBusType get_vehicle_can_bus() { return this->vehicle_can_bus; }
-    inline void set_vehicle_can_bus(ICANBus::VehicleBusType vehicle_can_bus)
-    {
-        this->vehicle_can_bus = vehicle_can_bus;
-        this->settings.setValue("Pages/Vehicle/can_bus", this->vehicle_can_bus);
-        emit vehicle_can_bus_changed(this->vehicle_can_bus);
-    }
-
-    inline QString get_vehicle_interface() { return this->vehicle_interface; }
-    inline void set_vehicle_interface(QString vehicle_interface)
-    {
-        this->vehicle_interface = vehicle_interface;
-        if (this->vehicle_interface == "disabled")
-            this->settings.remove("Pages/Vehicle/interface");
-        else
-            this->settings.setValue("Pages/Vehicle/interface", this->vehicle_interface);
-        emit vehicle_interface_changed(this->vehicle_interface);
-    }
-
-    inline QString get_vehicle_plugin() { return this->vehicle_plugin; }
-    inline void set_vehicle_plugin(QString vehicle_plugin)
-    {
-        this->vehicle_plugin = vehicle_plugin;
-        if (this->vehicle_plugin == "unloader")
-            this->settings.remove("Pages/Vehicle/plugin");
-        else
-            this->settings.setValue("Pages/Vehicle/plugin", this->vehicle_plugin);
     }
 
     inline QString get_cam_network_url() { return this->cam_network_url; }
@@ -159,9 +129,6 @@ class Config : public QObject {
     QSettings settings;
     QString media_home;
     bool si_units;
-    ICANBus::VehicleBusType vehicle_can_bus;
-    QString vehicle_interface;
-    QString vehicle_plugin;
     QString cam_network_url;
     QString cam_local_device;
     bool cam_is_network;
@@ -178,6 +145,4 @@ class Config : public QObject {
     void si_units_changed(bool si_units);
     void cam_autoconnect_changed(bool enabled);
     void cam_overlay_changed(bool enabled);
-    void vehicle_can_bus_changed(ICANBus::VehicleBusType state);
-    void vehicle_interface_changed(QString interface);
 };

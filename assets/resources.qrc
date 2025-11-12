@@ -43,7 +43,6 @@
         <file>icons/add.svg</file>
         <file>icons/remove.svg</file>
         <file>icons/expand_more.svg</file>
-        <file>icons/climate_ref.svg</file>
         <file>icons/chevron_left.svg</file>
         <file>icons/chevron_right.svg</file>
         <file>icons/defrost.svg</file>
@@ -56,6 +55,5 @@
         <file>fonts/Titillium_Web/TitilliumWeb-Regular.ttf</file>
         <file>fonts/Montserrat/Montserrat-LightItalic.ttf</file>
         <file>fonts/Montserrat/Montserrat-Regular.ttf</file>
-        <file>graphics/vehicle/car.svg</file>
     </qresource>
 </RCC>

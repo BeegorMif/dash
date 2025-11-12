@@ -65,10 +65,3 @@ Makefile
 *_autogen/
 gitversion.h
 openauto.ini
-
-# Plugins #
-###########
-plugins/vehicle/*
-!plugins/vehicle/bmw_f20
-!plugins/vehicle/test
-!plugins/vehicle/README.md

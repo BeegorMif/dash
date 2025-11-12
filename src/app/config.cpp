@@ -11,12 +11,6 @@ Config::Config()
 {
     this->media_home = this->settings.value("Pages/Media/Local/home", QDir().absolutePath()).toString();
     this->si_units = this->settings.value("Pages/Vehicle/si_units", false).toBool();
-    // 0 - SocketCAN
-    // 1 - Elm 327 USB
-    // 2 - Elm 327 Bluetooth
-    this->vehicle_can_bus = (ICANBus::VehicleBusType)(this->settings.value("Pages/Vehicle/can_bus", ICANBus::VehicleBusType::SocketCAN).toInt());
-    this->vehicle_interface = this->settings.value("Pages/Vehicle/interface", "disabled").toString();
-    this->vehicle_plugin = this->settings.value("Pages/Vehicle/plugin", "unloader").toString();
     this->cam_network_url = this->settings.value("Pages/Camera/stream_url", QString()).toString();
     this->cam_local_device = this->settings.value("Pages/Camera/local_device", QString()).toString();
     this->cam_is_network = this->settings.value("Pages/Camera/is_network", false).toBool();
