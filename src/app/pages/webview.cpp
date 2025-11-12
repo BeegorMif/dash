@@ -46,6 +46,10 @@ public slots:
         // Pass this to arbiter
         arbiter_.set_mode(enabled ? Session::Theme::Dark : Session::Theme::Light);
     }
+    Q_INVOKABLE void setPage(int page) {
+        qDebug() << "[WebBridge] Setting curr_page to" << page;
+        arbiter_.set_curr_page(page);
+    }
 
 private:
     Arbiter &arbiter_;
@@ -120,7 +124,7 @@ QWidget* WebviewPage::loadWebview() {
         }
     });
 
-    view_->load(QUrl("http://127.0.0.1:5174"));
+    view_->load(QUrl("http://127.0.0.1:5173"));
     view_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->addWidget(view_);
     container->setLayout(layout);
