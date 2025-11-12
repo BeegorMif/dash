@@ -154,8 +154,6 @@ MainWindow::MainWindow(QRect geometry)
     this->stack->addWidget(dash);
     dash->init();
 
-    this->arbiter.system().brightness.set();
-
     if (this->arbiter.layout().fullscreen.on_start)
         this->arbiter.set_fullscreen(true);
 

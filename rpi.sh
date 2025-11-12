@@ -9,7 +9,6 @@ display_help() {
     echo "Raspberry Pi Dash additional install helpers Version 0.3"
     echo "Usage: $0 [option...]" >&2
     echo
-    echo "   -arb, --addrulebrightness        Add udev rules for brightness"
     echo "   -mem, --memorysplit              Set memory split"
     echo "   -gl,  --gldriver                 Set GL driver"
     echo "   -krn, --krnbt                    Set krnbt flag"
@@ -29,21 +28,6 @@ display_help() {
     echo "   rpi -krn"
     echo
     exit 1
-}
-
-add_brightness_udev_rule() {
-  FILE=/etc/udev/rules.d/52-dashbrightness.rules
-  if [[ ! -f "$FILE" ]]; then
-     # udev rules to allow write access to all users for Raspberry Pi 7" Touch Screen
-     echo "SUBSYSTEM==\"backlight\", RUN+=\"/bin/chmod 666 /sys/class/backlight/%k/brightness\"" | sudo tee $FILE
-     if [[ $? -eq 0 ]]; then
-         echo -e "Permissions created\n"
-     else
-         echo -e "Unable to create permissions\n"
-     fi
-  else
-     echo -e "Rules exists\n"
-  fi
 }
 
 set_memory_split() {
@@ -82,10 +66,6 @@ fi
 while :
 do
     case "$1" in
-        -arb | --addrulebrightness)
-            add_brightness_udev_rule
-            exit 0
-          ;;
         -mem | --memorysplit)
             if [ $# -ne 0 ]; then
               set_memory_split $2

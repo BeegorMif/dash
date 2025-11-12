@@ -31,11 +31,6 @@ class Arbiter : public QObject {
     void set_curr_fullscreen_toggler(FullscreenToggler *toggler);
     void set_curr_fullscreen_toggler(int id);
     void set_fullscreen_on_start(bool enabled);
-    void set_brightness(uint8_t brightness);
-    void decrease_brightness(uint8_t val);
-    void increase_brightness(uint8_t val);
-    void max_brightness();
-    void min_brightness();
     void set_volume(uint8_t volume);
     void decrease_volume(uint8_t val);
     void increase_volume(uint8_t val);
@@ -65,7 +60,6 @@ class Arbiter : public QObject {
     void fullscreen_changed(bool fullscreen);
     void curr_fullscreen_toggler_changed(FullscreenToggler *toggler);
     void fullscreen_on_start_changed(bool enabled);
-    void brightness_changed(uint8_t brightness);
     void volume_changed(uint8_t volume);
     void cursor_changed(bool enabled);
     void action_changed(Action *action, QString key);

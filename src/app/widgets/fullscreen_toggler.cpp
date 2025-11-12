@@ -55,16 +55,13 @@ ButtonFullscreenToggler::ButtonFullscreenToggler(Arbiter &arbiter)
     layout->setSpacing(0);
     layout->addWidget(label);
 
-    connect(&this->arbiter, &Arbiter::brightness_changed, [this](uint8_t brightness){
-        this->setWindowOpacity(brightness / 510.0);
-    });
 }
 
 void ButtonFullscreenToggler::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
 
-    this->setWindowOpacity(this->arbiter.system().brightness.value / 510.0);
+    this->setWindowOpacity(1);
     this->move(this->last_pos);
 }
 
@@ -76,7 +73,7 @@ void ButtonFullscreenToggler::closeEvent(QCloseEvent *event)
 
 void ButtonFullscreenToggler::mousePressEvent(QMouseEvent *event)
 {
-    this->setWindowOpacity(this->arbiter.system().brightness.value / 255.0);
+    this->setWindowOpacity(1);
     QFont f = this->label->font();
     f.setPointSize(f.pointSize() * 1.5);
     this->label->setFont(f);
@@ -87,7 +84,7 @@ void ButtonFullscreenToggler::mousePressEvent(QMouseEvent *event)
 void ButtonFullscreenToggler::mouseReleaseEvent(QMouseEvent *event)
 {
     this->arbiter.window()->activateWindow();
-    this->setWindowOpacity(this->arbiter.system().brightness.value / 510.0);
+    this->setWindowOpacity(1);
     QFont f = this->label->font();
     f.setPointSize(f.pointSize() / 1.5);
     this->label->setFont(f);

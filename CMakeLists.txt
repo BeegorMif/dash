@@ -8,7 +8,6 @@ set(base_directory ${CMAKE_CURRENT_SOURCE_DIR})
 set(resources_directory ${base_directory}/assets)
 set(sources_directory ${base_directory}/src)
 set(include_directory ${base_directory}/include)
-set(plugins_directory ${base_directory}/plugins)
 include(${base_directory}/cmake_modules/functions.cmake)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${base_directory}/lib)
@@ -79,8 +78,6 @@ message(INFO "${GST_LIBRARIES}")
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 file(GLOB_RECURSE source_files ${sources_directory}/*.cpp ${include_directory}/*.hpp ${resources_directory}/*.qrc)
-
-add_subdirectory(plugins)
 
 add_executable(dash ${source_files})
 

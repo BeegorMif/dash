@@ -18,29 +18,10 @@
 #include "app/pages/blackout.hpp"
 #include "app/pages/webview.hpp"
 #include "app/utilities/icon_engine.hpp"
-#include "plugins/brightness_plugin.hpp"
 #include "aasdk_proto/ButtonCodeEnum.pb.h"
 
 #include "app/session.hpp"
 
-QDir Session::plugin_dir(QString plugin)
-{
-    QDir plugin_dir(QCoreApplication::applicationDirPath());
-    plugin_dir.cdUp();
-    plugin_dir.cd("lib");
-    plugin_dir.cd("plugins");
-    plugin_dir.cd(plugin);
-
-    return plugin_dir;
-}
-
-QString Session::fmt_plugin(QString plugin)
-{
-    plugin.remove(0, 3);
-    plugin.replace("_", " ");
-
-    return plugin;
-}
 
 Session::Theme::Mode Session::Theme::from_str(QString mode)
 {
@@ -145,73 +126,10 @@ const char *Session::System::SCREENBLANK_OFF_CMD = "sudo ddcutil setvcp D6 01";
 const char *Session::System::SHUTDOWN_CMD = "sudo shutdown -h --no-wall now";
 const char *Session::System::REBOOT_CMD = "sudo shutdown -r now";
 
-const char *Session::System::Brightness::AUTO_PLUGIN = "ddcutil";
-
-Session::System::Brightness::Brightness(QSettings &settings)
-    : plugin(settings.value("System/Brightness/plugin", Session::System::Brightness::AUTO_PLUGIN).toString())
-    , value(settings.value("System/Brightness/value", 255).toUInt())
-    , loader_()
-{
-    for (const auto file : Session::plugin_dir("brightness").entryInfoList(QDir::Files)) {
-        auto path = file.absoluteFilePath();
-        if (QLibrary::isLibrary(path)) {
-            auto name = Session::fmt_plugin(file.baseName());
-            if (auto plugin = qobject_cast<BrightnessPlugin *>(QPluginLoader(path).instance()))
-                this->plugin_infos_.append({name, path, plugin->supported(), plugin->priority()});
-        }
-    }
-    std::sort(this->plugin_infos_.begin(), this->plugin_infos_.end());
-
-    this->load();
-}
-
-void Session::System::Brightness::load()
-{
-    if (this->loader_.isLoaded())
-        this->loader_.unload();
-
-    if ((this->plugin == Session::System::Brightness::AUTO_PLUGIN) && !this->plugin_infos_.isEmpty()) {
-        this->loader_.setFileName(this->plugin_infos_.first().path);
-    }
-    else {
-        auto it = std::find_if(this->plugin_infos_.begin(), this->plugin_infos_.end(), [this](PluginInfo &info){
-            return info.name == this->plugin;
-        });
-        if (it != this->plugin_infos_.end())
-            this->loader_.setFileName(it->path);
-    }
-}
-
-void Session::System::Brightness::set()
-{
-    if (auto plugin = qobject_cast<BrightnessPlugin *>(this->loader_.instance()))
-        plugin->set(this->value);
-}
-
-void Session::System::Brightness::reset()
-{
-    if (auto plugin = qobject_cast<BrightnessPlugin *>(this->loader_.instance()))
-        plugin->set(255);
-}
-
-const QList<QString> &Session::System::Brightness::plugins() const
-{
-    // generates only once
-    static const QList<QString> plugins = [this]{
-        QList<QString> names;
-        for (const auto info : this->plugin_infos_) {
-            if (info.supported)
-                names.append(info.name);
-        }
-        return names;
-    }();
-    return plugins;
-}
 
 Session::System::System(QSettings &settings, Arbiter &arbiter)
     : clock()
     , bluetooth(arbiter)
-    , brightness(settings)
     , volume(settings.value("System/volume", 50).toUInt())
 {
     this->set_volume();
@@ -288,44 +206,6 @@ QFont Session::Forge::font(int size, bool mono) const
     return QFont(name, scaled);
 }
 
-QWidget *Session::Forge::brightness_slider(bool buttons) const
-{
-    auto widget = new QWidget();
-    auto layout = new QHBoxLayout(widget);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(1);
-
-    if (buttons) {
-        auto dim_button = new QPushButton();
-        dim_button->setFlat(true);
-        this->iconize("brightness_low", dim_button, 26);
-        QObject::connect(dim_button, &QPushButton::clicked, [this]{ this->arbiter_.decrease_brightness(18); });
-
-        auto brighten_button = new QPushButton();
-        brighten_button->setFlat(true);
-        this->iconize("brightness_high", brighten_button, 26);
-        QObject::connect(brighten_button, &QPushButton::clicked, [this]{ this->arbiter_.increase_brightness(18); });
-
-        auto max_button = new QPushButton();
-        max_button->setFlat(true);
-        max_button->setText("Max");
-        QObject::connect(max_button, &QPushButton::clicked, [this]{ this->arbiter_.max_brightness(); });
-
-        auto min_button = new QPushButton();
-        min_button->setFlat(true);
-        min_button->setText("Min");
-        QObject::connect(min_button, &QPushButton::clicked, [this]{ this->arbiter_.min_brightness(); });
-
-        layout->addWidget(dim_button);
-        layout->addWidget(brighten_button);
-        layout->addWidget(min_button);
-        layout->addWidget(max_button);
-    }
-
-    // layout->insertWidget(1, 4);
-
-    return widget;
-}
 
 QWidget *Session::Forge::volume_slider(bool buttons) const
 {
@@ -393,8 +273,6 @@ Session::Core::Core(QSettings &settings, Arbiter &arbiter)
         new Action("Android Auto Scroll Down", [&arbiter, aa_handler](Action::ActionState actionState){ if(actionState == Action::ActionState::Activated || actionState == Action::ActionState::Triggered) aa_handler->injectButtonPress(aasdk::proto::enums::ButtonCode::SCROLL_WHEEL, openauto::projection::WheelDirection::LEFT); }, arbiter.window()),
 
         new Action("Toggle Dark Mode", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.toggle_mode(); }, arbiter.window()),
-        new Action("Decrease Brightness", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.decrease_brightness(4); }, arbiter.window()),
-        new Action("Increase Brightness", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.increase_brightness(4); }, arbiter.window()),
         new Action("Decrease Volume", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.decrease_volume(2); }, arbiter.window()),
         new Action("Increase Volume", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.increase_volume(2); }, arbiter.window()),
         new Action("Toggle Fullscreen", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.toggle_fullscreen(); }, arbiter.window())

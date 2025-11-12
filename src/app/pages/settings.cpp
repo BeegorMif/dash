@@ -61,8 +61,6 @@ QWidget *MainSettingsTab::settings_widget()
     layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->volume_row_widget(), 1);
     layout->addWidget(Session::Forge::br(), 1);
-    layout->addWidget(this->brightness_row_widget(), 1);
-    layout->addWidget(Session::Forge::br(), 1);
     layout->addWidget(this->controls_row_widget(), 1);
 
     QScrollArea *scroll_area = new QScrollArea(this);
@@ -92,29 +90,6 @@ QWidget *MainSettingsTab::dark_mode_row_widget()
     });
 
     layout->addWidget(toggle, 1, Qt::AlignHCenter);
-
-    return widget;
-}
-
-QWidget *MainSettingsTab::brightness_row_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-
-    QLabel *label = new QLabel("Brightness", widget);
-    layout->addWidget(label, 1);
-
-    layout->addWidget(this->brightness_widget(), 1);
-
-    return widget;
-}
-
-QWidget *MainSettingsTab::brightness_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QVBoxLayout *layout = new QVBoxLayout(widget);
-
-    layout->addWidget(this->arbiter.forge().brightness_slider());
 
     return widget;
 }

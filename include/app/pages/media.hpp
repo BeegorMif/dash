@@ -3,7 +3,6 @@
 #include <QFileInfo>
 #include <QMap>
 #include <QMediaPlayer>
-#include <QPluginLoader>
 #include <QString>
 #include <QtWidgets>
 

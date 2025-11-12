@@ -138,36 +138,6 @@ void Arbiter::set_fullscreen_on_start(bool enabled)
     emit fullscreen_on_start_changed(enabled);
 }
 
-void Arbiter::set_brightness(uint8_t brightness)
-{
-    this->system().brightness.value = brightness;
-    this->settings().setValue("System/Brightness/value", brightness);
-
-    this->system().brightness.set();
-
-    emit brightness_changed(brightness);
-}
-
-void Arbiter::decrease_brightness(uint8_t val)
-{
-    this->set_brightness(std::min(std::max(1, this->system().brightness.value - val), 255));
-}
-
-void Arbiter::increase_brightness(uint8_t val)
-{
-    this->set_brightness(std::min(std::max(1, this->system().brightness.value + val), 255));
-}
-
-void Arbiter::max_brightness()
-{
-    this->set_brightness(255);
-}
-
-void Arbiter::min_brightness()
-{
-    this->set_brightness(1);
-}
-
 void Arbiter::set_volume(uint8_t volume)
 {
     this->system().volume = volume;

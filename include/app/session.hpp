@@ -12,7 +12,6 @@
 #include <QIcon>
 #include <QList>
 #include <QMap>
-#include <QPluginLoader>
 #include <QSettings>
 #include <QString>
 #include <QPalette>
@@ -30,8 +29,6 @@ class Arbiter;
 
 class Session {
    public:
-    static QDir plugin_dir(QString plugin);
-    static QString fmt_plugin(QString plugin);
 
     struct Theme {
         enum Mode {
@@ -98,39 +95,8 @@ class Session {
         static const char *SCREENBLANK_OFF_CMD;
         static const char *REBOOT_CMD;
 
-        struct Brightness {
-            static const char *AUTO_PLUGIN;
-
-            QString plugin;
-            uint8_t value;
-
-            Brightness(QSettings &settings);
-            void load();
-            void set();
-            void reset();
-            const QList<QString> &plugins() const;
-
-           private:
-            struct PluginInfo {
-                QString name;
-                QString path;
-                bool supported;
-                uint8_t priority;
-
-                bool operator<(const PluginInfo &rhs) const
-                {
-                    return (this->supported && !rhs.supported) ||
-                        ((this->supported && rhs.supported) && (this->priority > rhs.priority));
-                }
-            };
-
-            QPluginLoader loader_;
-            QList<PluginInfo> plugin_infos_;
-        };
-
         Clock clock;
         Bluetooth bluetooth;
-        Brightness brightness;
         uint8_t volume;
 
         System(QSettings &settings, Arbiter &arbiter);
@@ -147,7 +113,6 @@ class Session {
         void iconize(QString name, QString alt_name, QAbstractButton *button, uint8_t size) const;
         void iconize(QIcon &icon, QAbstractButton *button, uint8_t size) const;
         QFont font(int size, bool mono = false) const;
-        QWidget *brightness_slider(bool buttons = true) const;
         QWidget *volume_slider(bool buttons = true) const;
 
        private:
