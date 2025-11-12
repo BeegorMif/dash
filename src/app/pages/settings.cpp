@@ -603,7 +603,6 @@ QWidget *AboutSettingsTab::load_msg()
     layout->addWidget(label2);
     layout->addWidget(label3);
     layout->addWidget(Session::Forge::br(), 1);
-    layout->addWidget(label4);
     layout->addStretch();
 
     return widget;

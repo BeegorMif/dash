@@ -204,8 +204,6 @@ DebugWindow::DebugWindow(Arbiter &arbiter, QWidget *parent) : QWidget(parent)
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    layout->addWidget(lights_row);
-    layout->addWidget(Session::Forge::br(false));
     layout->addWidget(reverse_row);
     layout->addWidget(Session::Forge::br(false));
 }
