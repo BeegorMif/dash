@@ -17,8 +17,6 @@ int main(int argc, char *argv[])
             "--disable-features=VaapiVideoDecoder,WebRtcHWDecoding "
             "--disable-software-rasterizer "
             "--ignore-gpu-blocklist "
-            "--enable-features=UseOzonePlatform "
-            "--ozone-platform=egl "
             "--use-gl=egl");
 
     qputenv("QT_QUICK_CONTROLS_STYLE", "Material");
