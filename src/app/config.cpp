@@ -11,15 +11,6 @@ Config::Config()
 {
     this->media_home = this->settings.value("Pages/Media/Local/home", QDir().absolutePath()).toString();
     this->si_units = this->settings.value("Pages/Vehicle/si_units", false).toBool();
-    this->cam_network_url = this->settings.value("Pages/Camera/stream_url", QString()).toString();
-    this->cam_local_device = this->settings.value("Pages/Camera/local_device", QString()).toString();
-    this->cam_is_network = this->settings.value("Pages/Camera/is_network", false).toBool();
-    this->cam_local_format_override = this->settings.value("Pages/Camera/local_format_override", QVideoFrame::Format_Invalid).value<QVideoFrame::PixelFormat>();
-    this->cam_autoconnect = this->settings.value("Pages/Camera/automatically_reconnect", false).toBool();
-    this->cam_autoconnect_time_secs = this->settings.value("Pages/Camera/auto_reconnect_time_secs", 6).toInt();
-    this->cam_overlay = this->settings.value("Pages/Camera/Overlay/enabled", false).toBool();
-    this->cam_overlay_width = this->settings.value("Pages/Camera/Overlay/width", 100).toInt();
-    this->cam_overlay_height = this->settings.value("Pages/Camera/Overlay/height", 100).toInt();
     this->show_aa_connected = this->settings.value("Pages/OpenAuto/show_aa_connected", 100).toBool();
     this->settings.endGroup();
 }

@@ -39,69 +39,6 @@ class Config : public QObject {
         emit si_units_changed(this->si_units);
     }
 
-    inline QString get_cam_network_url() { return this->cam_network_url; }
-    inline void set_cam_network_url(QString network_url)
-    {
-        this->cam_network_url = network_url;
-        this->settings.setValue("Pages/Camera/stream_url", this->cam_network_url);
-    }
-
-    inline const QString& get_cam_local_device() { return this->cam_local_device; }
-    inline void set_cam_local_device(QString local_device)
-    {
-        this->cam_local_device = local_device;
-        this->settings.setValue("Pages/Camera/local_device", this->cam_local_device);
-    }
-
-    inline bool get_cam_is_network() { return this->cam_is_network; }
-    inline void set_cam_is_network(bool is_network)
-    {
-        this->cam_is_network = is_network;
-        this->settings.setValue("Pages/Camera/is_network", this->cam_is_network);
-    }
-
-    inline QVideoFrame::PixelFormat get_cam_local_format_override() { return this->cam_local_format_override; }
-    inline void set_cam_local_format_override(QVideoFrame::PixelFormat local_format)
-    {
-        this->cam_local_format_override = local_format;
-        this->settings.setValue("Pages/Camera/local_format_override", this->cam_local_format_override);
-    }
-
-    inline bool get_cam_autoconnect() { return this->cam_autoconnect; }
-    inline void set_cam_autoconnect(bool enabled)
-    {
-        this->cam_autoconnect = enabled;
-        this->settings.setValue("Pages/Camera/automatically_reconnect", this->cam_autoconnect);
-    }
-
-    inline int get_cam_autoconnect_time_secs() { return this->cam_autoconnect_time_secs; }
-    inline void set_cam_autoconnect_time_secs(int seconds)
-    {
-        this->cam_autoconnect_time_secs = seconds;
-        this->settings.setValue("Pages/Camera/auto_reconnect_time_secs", this->cam_autoconnect_time_secs);
-    }
-
-    inline bool get_cam_overlay() { return this->cam_overlay; }
-    inline void set_cam_overlay(bool enabled)
-    {
-        this->cam_overlay = enabled;
-        this->settings.setValue("Pages/Camera/Overlay/enabled", this->cam_overlay);
-    }
-
-    inline int get_cam_overlay_width() { return this->cam_overlay_width; }
-    inline void set_cam_overlay_width(int value)
-    {
-        this->cam_overlay_width = value;
-        this->settings.setValue("Pages/Camera/Overlay/width", this->cam_overlay_width);
-    }
-
-    inline int get_cam_overlay_height() { return this->cam_overlay_height; }
-    inline void set_cam_overlay_height(int value)
-    {
-        this->cam_overlay_height = value;
-        this->settings.setValue("Pages/Camera/Overlay/height", this->cam_overlay_height);
-    }
-
     inline bool get_show_aa_connected() { return this->show_aa_connected; }
     inline void set_show_aa_connected(bool enabled)
     {
