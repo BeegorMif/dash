@@ -249,9 +249,13 @@ QWidget *LayoutSettingsTab::pages_widget()
         }
     }
     connect(&this->arbiter, &Arbiter::page_changed, [this, group_layout](Page *page, bool enabled){
-        auto item = group_layout->itemAt(this->arbiter.layout().page_id(page));
-        if (auto button = qobject_cast<QCheckBox *>(item->widget()))
-            button->setChecked(enabled);
+        int idx = this->arbiter.layout().page_id(page);
+        auto item = group_layout->itemAt(idx);
+        if (!item)
+            return;
+        if (auto button = qobject_cast<QCheckBox *>(item->widget())) {
+        button->setChecked(enabled);
+    }
     });
 
     layout->addWidget(group, 1, Qt::AlignHCenter);
