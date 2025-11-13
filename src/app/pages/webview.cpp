@@ -142,7 +142,7 @@ void WebviewPage::startNodeReconnect() {
     connect(reconnectTimer, &QTimer::timeout, this, [this](){
         if(!view_) return;
         QNetworkAccessManager* manager = new QNetworkAccessManager(this);
-        QNetworkRequest request(("http://127.0.0.1:3000"));
+        QNetworkRequest request(QUrl("http://127.0.0.1:3000"));
         QNetworkReply* reply = manager->get(request);
 
         connect(reply, &QNetworkReply::finished, this, [this, reply](){
