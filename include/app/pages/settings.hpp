@@ -48,8 +48,6 @@ class LayoutSettingsTab : public QWidget {
    private:
     QWidget *settings_widget();
     QWidget *pages_widget();
-    QWidget *fullscreen_widget();
-    QWidget *fullscreen_on_start_widget();
     QWidget *scale_row_widget();
     QWidget *scale_widget();
 

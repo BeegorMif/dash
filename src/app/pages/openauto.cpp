@@ -464,7 +464,7 @@ QWidget *OpenAutoPage::connect_msg()
     layout2->setContentsMargins(0, 0, 0, 0);
     layout2->setSpacing(0);
 
-    Dialog *dialog = new Dialog(this->arbiter, true, this->window());
+    Dialog *dialog = new Dialog(this->arbiter, this->window());
     dialog->set_body(new OpenAutoPage::Settings(this->arbiter, this));
     QPushButton *save_button = new QPushButton("save");
     connect(save_button, &QPushButton::clicked, [this]() {

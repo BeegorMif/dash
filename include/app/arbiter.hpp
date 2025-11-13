@@ -9,7 +9,6 @@
 #include "app/action.hpp"
 #include "app/session.hpp"
 #include "app/pages/page.hpp"
-#include "app/widgets/fullscreen_toggler.hpp"
 #include "openauto/Service/InputService.hpp"
 
 class MainWindow;
@@ -26,11 +25,6 @@ class Arbiter : public QObject {
     void set_curr_page(Page *page);
     void set_curr_page(int id);
     void set_page(Page *page, bool enabled);
-    void set_fullscreen(bool fullscreen);
-    void toggle_fullscreen();
-    void set_curr_fullscreen_toggler(FullscreenToggler *toggler);
-    void set_curr_fullscreen_toggler(int id);
-    void set_fullscreen_on_start(bool enabled);
     void set_volume(uint8_t volume);
     void decrease_volume(uint8_t val);
     void increase_volume(uint8_t val);
@@ -57,9 +51,6 @@ class Arbiter : public QObject {
     void scale_changed(float scale);
     void curr_page_changed(Page *page);
     void page_changed(Page *page, bool enabled);
-    void fullscreen_changed(bool fullscreen);
-    void curr_fullscreen_toggler_changed(FullscreenToggler *toggler);
-    void fullscreen_on_start_changed(bool enabled);
     void volume_changed(uint8_t volume);
     void cursor_changed(bool enabled);
     void action_changed(Action *action, QString key);

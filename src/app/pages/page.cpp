@@ -82,7 +82,7 @@ QLayout *Page::settings_layout()
 
 Dialog *Page::dialog()
 {
-    auto dialog = new Dialog(this->arbiter, true, this->container_);
+    auto dialog = new Dialog(this->arbiter, this->container_);
     dialog->set_body(this->settings_body());
     auto save_button = new QPushButton("save");
     QObject::connect(save_button, &QPushButton::clicked, [this]{ this->on_settings_save(); });

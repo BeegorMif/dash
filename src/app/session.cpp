@@ -61,25 +61,10 @@ QPalette Session::Theme::palette() const
     return palette;
 }
 
-Session::Layout::Fullscreen::Fullscreen(QSettings &settings, Arbiter &arbiter)
-    : enabled(false)
-    , curr_toggler(nullptr)
-    , on_start(settings.value("Layout/Fullscreen/on_start", false).toBool())
-{
-    this->togglers_ = {
-        new NullFullscreenToggler(arbiter),
-        new BarFullscreenToggler(arbiter),
-        new ButtonFullscreenToggler(arbiter)
-    };
-
-    this->curr_toggler = this->togglers_.value(settings.value("Layout/Fullscreen/toggler", 0).toInt());
-}
-
 Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
     : scale(settings.value("Layout/scale", 1.0).toDouble())
     , openauto_page(new OpenAutoPage(arbiter))
     , curr_page(nullptr)
-    , fullscreen(settings, arbiter)
 {
     this->pages_ = {
         this->openauto_page,
@@ -275,7 +260,6 @@ Session::Core::Core(QSettings &settings, Arbiter &arbiter)
         new Action("Toggle Dark Mode", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.toggle_mode(); }, arbiter.window()),
         new Action("Decrease Volume", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.decrease_volume(2); }, arbiter.window()),
         new Action("Increase Volume", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.increase_volume(2); }, arbiter.window()),
-        new Action("Toggle Fullscreen", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.toggle_fullscreen(); }, arbiter.window())
     };
 
     for (auto page : arbiter.layout().pages()) {

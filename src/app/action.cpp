@@ -38,7 +38,7 @@ GPIONotifier::GPIONotifier()
 }
 
 ActionDialog::ActionDialog(Arbiter &arbiter)
-    : Dialog(arbiter, true, arbiter.window())
+    : Dialog(arbiter, arbiter.window())
     , notifier()
 {
     this->label = new QLabel();

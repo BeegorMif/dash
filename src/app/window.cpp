@@ -56,10 +56,6 @@ Dash::Dash(Arbiter &arbiter)
         this->arbiter.set_curr_page(id);
         this->rail.timer.start();
     });
-    connect(&this->rail.group, QOverload<int>::of(&QButtonGroup::buttonReleased), [this](int id){
-        if (this->rail.timer.hasExpired(1000))
-            this->arbiter.set_fullscreen(true);
-    });
     connect(&this->arbiter, &Arbiter::curr_page_changed, [this](Page *page){
         this->set_page(page);
     });
@@ -146,16 +142,12 @@ MainWindow::MainWindow(QRect geometry)
     layout->setSpacing(0);
 
     layout->addWidget(this->stack);
-    layout->addWidget(this->arbiter.layout().fullscreen.toggler(1)->widget());
 
     this->setCentralWidget(frame);
 
     auto dash = new Dash(this->arbiter);
     this->stack->addWidget(dash);
     dash->init();
-
-    if (this->arbiter.layout().fullscreen.on_start)
-        this->arbiter.set_fullscreen(true);
 
     // ---- USB Monitor Thread ----
     usbMonitor = new UsbMonitor(this);
@@ -177,12 +169,6 @@ void MainWindow::showEvent(QShowEvent *event)
     this->arbiter.update();
 }
 
-void MainWindow::set_fullscreen(Page *page)
-{
-    auto widget = page->container()->take();
-    this->stack->addWidget(widget);
-    this->stack->setCurrentWidget(widget);
-}
 
 // ---------------- Shutdown Logic ----------------
 

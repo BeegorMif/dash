@@ -165,7 +165,7 @@ QWidget *CameraPage::connect_widget()
     layout->addStretch();
     layout->addWidget(checkboxes_widget);
 
-    Dialog *dialog = new Dialog(this->arbiter, true, this->window());
+    Dialog *dialog = new Dialog(this->arbiter, this->window());
     dialog->set_body(new CameraPage::Settings(this->arbiter, this));
     connect(settings_button, &QPushButton::clicked, [dialog]{ dialog->open(); });
 

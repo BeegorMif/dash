@@ -16,7 +16,7 @@ class Dialog : public QDialog {
     Q_OBJECT
 
    public:
-    Dialog(Arbiter &arbiter, bool fullscreen, QWidget *parent = nullptr);
+    Dialog(Arbiter &arbiter, QWidget *parent = nullptr);
     void open(int timeout = 0);
 
     void set_title(QString str);
@@ -36,7 +36,6 @@ class Dialog : public QDialog {
     QVBoxLayout *body;
     QHBoxLayout *buttons;
     QTimer *timer;
-    bool fullscreen;
 
     QWidget *content_widget();
     void set_position();

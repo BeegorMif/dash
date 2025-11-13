@@ -19,8 +19,6 @@
 
 #include "app/arbiter.hpp"
 
-class FullscreenToggle;
-
 class Dash : public QWidget {
     Q_OBJECT
 
@@ -57,7 +55,6 @@ class MainWindow : public QMainWindow {
 
    public:
     MainWindow(QRect geometry);
-    void set_fullscreen(Page *page);
 
    protected:
     void showEvent(QShowEvent *event) override;
