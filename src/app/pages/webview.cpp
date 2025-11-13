@@ -124,7 +124,7 @@ QWidget* WebviewPage::loadWebview() {
         }
     });
 
-    view_->load(QUrl("http://127.0.0.1:5173"));
+    view_->load(QUrl("http://127.0.0.1:3000"));
     view_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layout->addWidget(view_);
     container->setLayout(layout);
@@ -142,7 +142,7 @@ void WebviewPage::startNodeReconnect() {
     connect(reconnectTimer, &QTimer::timeout, this, [this](){
         if(!view_) return;
         QNetworkAccessManager* manager = new QNetworkAccessManager(this);
-        QNetworkRequest request(QUrl("http://127.0.0.1:3000"));
+        QNetworkRequest request(("http://127.0.0.1:3000"));
         QNetworkReply* reply = manager->get(request);
 
         connect(reply, &QNetworkReply::finished, this, [this, reply](){
