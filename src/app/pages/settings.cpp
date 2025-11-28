@@ -182,15 +182,15 @@ QWidget *MainSettingsTab::controls_widget()
     connect(reboot_button, &QPushButton::clicked, [this]{
         this->arbiter.settings().sync();
         sync();
-        system(Session::System::REBOOT_CMD);
+        std::ignore = system(Session::System::REBOOT_CMD);
     });
     layout->addWidget(reboot_button);
     auto shut_down_button = new QPushButton("shut down");
     connect(shut_down_button, &QPushButton::clicked, [this]{
         this->arbiter.settings().sync();
         sync();
-        system(Session::System::SCREENBLANK_CMD);
-        system(Session::System::SHUTDOWN_CMD);
+        std::ignore = system(Session::System::SCREENBLANK_CMD);
+        std::ignore = system(Session::System::SHUTDOWN_CMD);
     });
     layout->addWidget(shut_down_button);
 

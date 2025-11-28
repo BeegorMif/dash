@@ -40,10 +40,10 @@ QWidget *BlackoutPage::load_msg()
 void BlackoutPage::showEvent(QShowEvent *event)
 {
     QWidget::showEvent(event);
-    system(Session::System::SCREENBLANK_CMD);
+    std::ignore = system(Session::System::SCREENBLANK_CMD);
 }
 void BlackoutPage::screenOn()
 {
     this->arbiter.set_curr_page(0);
-    system(Session::System::SCREENBLANK_OFF_CMD);
+    std::ignore = system(Session::System::SCREENBLANK_OFF_CMD);
 }

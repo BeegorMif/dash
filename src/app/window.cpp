@@ -107,7 +107,7 @@ QWidget *Dash::power_control() const
     connect(restart, &QPushButton::clicked, [this]{
         this->arbiter.settings().sync();
         sync();
-        system(Session::System::REBOOT_CMD);
+        std::ignore = system(Session::System::REBOOT_CMD);
     });
     layout->addWidget(restart);
 
@@ -117,8 +117,8 @@ QWidget *Dash::power_control() const
     connect(power_off, &QPushButton::clicked, [this]{
         this->arbiter.settings().sync();
         sync();
-        system(Session::System::SCREENBLANK_CMD);
-        system(Session::System::SHUTDOWN_CMD);
+        std::ignore = system(Session::System::SCREENBLANK_CMD);
+        std::ignore = system(Session::System::SHUTDOWN_CMD);
     });
     layout->addWidget(power_off);
 
@@ -226,6 +226,6 @@ void MainWindow::performShutdown()
 {
     DASH_LOG(info) << "Executing system shutdown";
     cancelShutdownCountdown();
-    system(Session::System::SCREENBLANK_CMD);
-    system(Session::System::SHUTDOWN_CMD);
+    std::ignore = system(Session::System::SCREENBLANK_CMD);
+    std::ignore = system(Session::System::SHUTDOWN_CMD);
 }
