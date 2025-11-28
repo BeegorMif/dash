@@ -31,7 +31,6 @@ SettingsPage::SettingsPage(Arbiter &arbiter, QWidget *parent)
 void SettingsPage::init()
 {
     this->addTab(new MainSettingsTab(this->arbiter), "Main");
-    this->addTab(new LayoutSettingsTab(this->arbiter), "Layout");
     this->addTab(new BluetoothSettingsTab(this->arbiter, this), "Bluetooth");
     this->addTab(new ActionsSettingsTab(this->arbiter), "Actions");
 }
@@ -193,113 +192,6 @@ QWidget *MainSettingsTab::controls_widget()
         std::ignore = system(Session::System::SHUTDOWN_CMD);
     });
     layout->addWidget(shut_down_button);
-
-    return widget;
-}
-
-LayoutSettingsTab::LayoutSettingsTab(Arbiter &arbiter, QWidget *parent)
-    : QWidget(parent)
-    , arbiter(arbiter)
-{
-    this->config = Config::get_instance();
-
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(6, 0, 6, 0);
-
-    layout->addWidget(this->settings_widget());
-}
-
-QWidget *LayoutSettingsTab::settings_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QVBoxLayout *layout = new QVBoxLayout(widget);
-
-    layout->addWidget(this->pages_widget());
-
-    layout->addWidget(Session::Forge::br(), 1);
-    layout->addWidget(this->scale_row_widget(), 1);
-
-    QScrollArea *scroll_area = new QScrollArea(this);
-    Session::Forge::to_touch_scroller(scroll_area);
-    scroll_area->setWidgetResizable(true);
-    scroll_area->setWidget(widget);
-
-    return scroll_area;
-}
-
-QWidget *LayoutSettingsTab::pages_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-
-    QLabel *label = new QLabel("Pages", widget);
-    layout->addWidget(label, 1);
-
-    QGroupBox *group = new QGroupBox(widget);
-    QVBoxLayout *group_layout = new QVBoxLayout(group);
-
-    for (auto page : this->arbiter.layout().pages()) {
-        if (page->toggleale()) {
-            QCheckBox *button = new QCheckBox(page->name(), group);
-            button->setChecked(page->enabled());
-            connect(button, &QCheckBox::toggled, [this, page](bool checked){
-                this->arbiter.set_page(page, checked);
-            });
-            group_layout->addWidget(button);
-        }
-    }
-    connect(&this->arbiter, &Arbiter::page_changed, [this, group_layout](Page *page, bool enabled){
-        int idx = this->arbiter.layout().page_id(page);
-        auto item = group_layout->itemAt(idx);
-        if (!item)
-            return;
-        if (auto button = qobject_cast<QCheckBox *>(item->widget())) {
-        button->setChecked(enabled);
-    }
-    });
-
-    layout->addWidget(group, 1, Qt::AlignHCenter);
-
-    return widget;
-}
-
-QWidget *LayoutSettingsTab::scale_row_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-
-    QLabel *label = new QLabel("Scale", widget);
-    layout->addWidget(label, 1);
-
-    layout->addWidget(this->scale_widget(), 1);
-
-    return widget;
-}
-
-QWidget *LayoutSettingsTab::scale_widget()
-{
-    QWidget *widget = new QWidget(this);
-    QHBoxLayout *layout = new QHBoxLayout(widget);
-
-    QSlider *slider = new QSlider(Qt::Orientation::Horizontal, widget);
-    slider->setTracking(false);
-    slider->setRange(2, 6);
-    slider->setValue(this->arbiter.layout().scale * 4);
-    connect(slider, &QSlider::valueChanged, [this, slider](int position){ this->arbiter.set_scale(position / 4.0); });
-
-    QPushButton *lower_button = new QPushButton(widget);
-    lower_button->setFlat(true);
-    this->arbiter.forge().iconize("remove", lower_button, 32);
-    connect(lower_button, &QPushButton::clicked, [slider]{ slider->setValue(slider->value() - 1); });
-
-    QPushButton *raise_button = new QPushButton(widget);
-    raise_button->setFlat(true);
-    this->arbiter.forge().iconize("add", raise_button, 32);
-    connect(raise_button, &QPushButton::clicked, [slider]{ slider->setValue(slider->value() + 1); });
-
-    layout->addWidget(lower_button);
-    layout->addWidget(slider, 4);
-    layout->addWidget(raise_button);
 
     return widget;
 }

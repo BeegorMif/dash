@@ -39,22 +39,6 @@ class MainSettingsTab : public QWidget {
     Config *config;
 };
 
-class LayoutSettingsTab : public QWidget {
-    Q_OBJECT
-
-   public:
-    LayoutSettingsTab(Arbiter &arbiter, QWidget *parent = nullptr);
-
-   private:
-    QWidget *settings_widget();
-    QWidget *pages_widget();
-    QWidget *scale_row_widget();
-    QWidget *scale_widget();
-
-    Arbiter &arbiter;
-    Config *config;
-};
-
 class BluetoothSettingsTab : public QWidget {
     Q_OBJECT
 
