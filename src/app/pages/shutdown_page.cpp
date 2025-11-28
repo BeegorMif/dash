@@ -20,10 +20,6 @@ ShutdownPage::ShutdownPage(QWidget *parent)
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     this->setStyleSheet(R"(
-        QLabel {
-            color: lightgray;
-            font-size: 28px;
-        }
         QPushButton {
             background-color: #4fa8d2;
             border: none;
