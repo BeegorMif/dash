@@ -18,34 +18,12 @@ void Arbiter::set_mode(Session::Theme::Mode mode)
     this->session_.update();
 
     emit mode_changed(mode);
-    emit color_changed(this->theme().color());
 }
 
 void Arbiter::toggle_mode()
 {
     auto mode = (this->theme().mode == Session::Theme::Light) ? Session::Theme::Dark : Session::Theme::Light;
     this->set_mode(mode);
-}
-
-void Arbiter::set_color(const QColor &color)
-{
-    this->theme().color() = color;
-    if (this->theme().mode == Session::Theme::Light)
-        this->settings().setValue("Theme/Color/light", color.name());
-    else
-        this->settings().setValue("Theme/Color/dark", color.name());
-
-    this->session_.update();
-
-    emit color_changed(color);
-}
-
-void Arbiter::set_scale(double scale)
-{
-    this->layout().scale = scale;
-    this->settings().setValue("Layout/scale", scale);
-
-    emit scale_changed(scale);
 }
 
 void Arbiter::set_curr_page(Page *page)
@@ -79,36 +57,6 @@ void Arbiter::set_page(Page *page, bool enabled)
     this->settings().endGroup();
 
     emit page_changed(page, enabled);
-}
-
-void Arbiter::set_volume(uint8_t volume)
-{
-    this->system().volume = volume;
-    this->settings().setValue("System/volume", volume);
-
-    this->system().set_volume();
-
-    emit volume_changed(volume);
-}
-
-void Arbiter::decrease_volume(uint8_t val)
-{
-    this->set_volume(std::min(std::max(0, this->system().volume - val), 100));
-}
-
-void Arbiter::increase_volume(uint8_t val)
-{
-    this->set_volume(std::min(std::max(0, this->system().volume + val), 100));
-}
-
-void Arbiter::set_cursor(bool enabled)
-{
-    this->session_.core_.cursor = enabled;
-    this->settings().setValue("Core/cursor", enabled);
-
-    this->core().set_cursor();
-
-    emit cursor_changed(enabled);
 }
 
 void Arbiter::set_action(Action *action, QString key)

@@ -72,7 +72,6 @@ class Session {
     };
 
     struct System {
-        static const char *VOLUME_CMD;
         static const char *SHUTDOWN_CMD;
         static const char *SCREENBLANK_CMD;
         static const char *SCREENBLANK_OFF_CMD;
@@ -80,10 +79,8 @@ class Session {
 
         Clock clock;
         Bluetooth bluetooth;
-        uint8_t volume;
 
         System(QSettings &settings, Arbiter &arbiter);
-        void set_volume() const;
     };
 
     struct Forge {
@@ -96,7 +93,6 @@ class Session {
         void iconize(QString name, QString alt_name, QAbstractButton *button, uint8_t size) const;
         void iconize(QIcon &icon, QAbstractButton *button, uint8_t size) const;
         QFont font(int size, bool mono = false) const;
-        QWidget *volume_slider(bool buttons = true) const;
 
        private:
         Arbiter &arbiter_;

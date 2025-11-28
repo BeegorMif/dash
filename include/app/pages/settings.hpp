@@ -19,26 +19,6 @@ class SettingsPage : public QTabWidget, public Page {
     void init() override;
 };
 
-class MainSettingsTab : public QWidget {
-    Q_OBJECT
-
-   public:
-    MainSettingsTab(Arbiter &arbiter, QWidget *parent = nullptr);
-
-   private:
-    QWidget *settings_widget();
-    QWidget *dark_mode_row_widget();
-    QWidget *color_row_widget();
-    QWidget *color_select_widget();
-    QWidget *cursor_row_widget();
-    QWidget *volume_row_widget();
-    QWidget *controls_row_widget();
-    QWidget *controls_widget();
-
-    Arbiter &arbiter;
-    Config *config;
-};
-
 class BluetoothSettingsTab : public QWidget {
     Q_OBJECT
 

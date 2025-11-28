@@ -20,15 +20,9 @@ class Arbiter : public QObject {
     Arbiter(MainWindow *window);
     void set_mode(Session::Theme::Mode mode);
     void toggle_mode();
-    void set_color(const QColor &color);
-    void set_scale(double scale);
     void set_curr_page(Page *page);
     void set_curr_page(int id);
     void set_page(Page *page, bool enabled);
-    void set_volume(uint8_t volume);
-    void decrease_volume(uint8_t val);
-    void increase_volume(uint8_t val);
-    void set_cursor(bool enabled);
     void set_action(Action *action, QString key);
 
     QMainWindow *window();
@@ -47,11 +41,7 @@ class Arbiter : public QObject {
 
    signals:
     void mode_changed(Session::Theme::Mode mode);
-    void color_changed(QColor color);
-    void scale_changed(float scale);
     void curr_page_changed(Page *page);
     void page_changed(Page *page, bool enabled);
-    void volume_changed(uint8_t volume);
-    void cursor_changed(bool enabled);
     void action_changed(Action *action, QString key);
 };

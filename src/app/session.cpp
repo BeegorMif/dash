@@ -101,7 +101,6 @@ Page *Session::Layout::next_enabled_page(Page *page) const
     return this->page(id);
 }
 
-const char *Session::System::VOLUME_CMD = "amixer set Master %1% --quiet";
 const char *Session::System::SCREENBLANK_CMD = "sudo ddcutil setvcp D6 04";
 const char *Session::System::SCREENBLANK_OFF_CMD = "sudo ddcutil setvcp D6 01";
 const char *Session::System::SHUTDOWN_CMD = "sudo shutdown -h --no-wall now";
@@ -111,16 +110,7 @@ const char *Session::System::REBOOT_CMD = "sudo shutdown -r now";
 Session::System::System(QSettings &settings, Arbiter &arbiter)
     : clock()
     , bluetooth(arbiter)
-    , volume(settings.value("System/volume", 50).toUInt())
 {
-    this->set_volume();
-}
-
-void Session::System::set_volume() const
-{
-    auto process = new QProcess();
-    process->start(QString(VOLUME_CMD).arg(this->volume));
-    process->waitForFinished();
 }
 
 QFrame *Session::Forge::br(bool vertical)
@@ -187,41 +177,6 @@ QFont Session::Forge::font(int size, bool mono) const
     return QFont(name, scaled);
 }
 
-
-QWidget *Session::Forge::volume_slider(bool buttons) const
-{
-    auto widget = new QWidget();
-    auto layout = new QHBoxLayout(widget);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
-
-    auto slider = new QSlider(Qt::Orientation::Horizontal);
-    slider->setTracking(false);
-    slider->setRange(0, 100);
-    slider->setValue(this->arbiter_.system().volume);
-    QObject::connect(slider, &QSlider::sliderReleased, [this, slider]{ this->arbiter_.set_volume(slider->sliderPosition()); });
-    QObject::connect(&this->arbiter_, &Arbiter::volume_changed, [slider](int volume) { slider->setValue(volume); });
-
-    if (buttons) {
-        auto lower_button = new QPushButton();
-        lower_button->setFlat(true);
-        this->iconize("volume_down", lower_button, 26);
-        QObject::connect(lower_button, &QPushButton::clicked, [this]{ this->arbiter_.decrease_volume(10); });
-
-        auto raise_button = new QPushButton();
-        raise_button->setFlat(true);
-        this->iconize("volume_up", raise_button, 26);
-        QObject::connect(raise_button, &QPushButton::clicked, [this]{ this->arbiter_.increase_volume(10); });
-
-        layout->addWidget(lower_button);
-        layout->addWidget(raise_button);
-    }
-
-    layout->insertWidget(1, slider, 4);
-
-    return widget;
-}
-
 Session::AndroidAuto::AndroidAuto(Arbiter &arbiter)
     : handler(new AAHandler())
 {
@@ -229,7 +184,6 @@ Session::AndroidAuto::AndroidAuto(Arbiter &arbiter)
 }
 
 Session::Core::Core(QSettings &settings, Arbiter &arbiter)
-    : cursor(settings.value("Core/cursor", true).toBool())
 {
     this->stylesheets_[Session::Theme::Light] = this->parse_stylesheet(":/stylesheets/light.qss");
     this->stylesheets_[Session::Theme::Dark] = this->parse_stylesheet(":/stylesheets/dark.qss");
@@ -254,8 +208,6 @@ Session::Core::Core(QSettings &settings, Arbiter &arbiter)
         new Action("Android Auto Scroll Down", [&arbiter, aa_handler](Action::ActionState actionState){ if(actionState == Action::ActionState::Activated || actionState == Action::ActionState::Triggered) aa_handler->injectButtonPress(aasdk::proto::enums::ButtonCode::SCROLL_WHEEL, openauto::projection::WheelDirection::LEFT); }, arbiter.window()),
 
         new Action("Toggle Dark Mode", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.toggle_mode(); }, arbiter.window()),
-        new Action("Decrease Volume", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.decrease_volume(2); }, arbiter.window()),
-        new Action("Increase Volume", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.increase_volume(2); }, arbiter.window()),
     };
 
     for (auto page : arbiter.layout().pages()) {
@@ -298,7 +250,6 @@ Session::Core::Core(QSettings &settings, Arbiter &arbiter)
     if (qApp)
         qApp->setFont(arbiter.forge().font(14));
 
-    this->set_cursor();
 }
 
 QString Session::Core::stylesheet(Theme::Mode mode, float scale) const
@@ -316,12 +267,6 @@ QString Session::Core::stylesheet(Theme::Mode mode, float scale) const
     }
 
     return stylesheet;
-}
-
-void Session::Core::set_cursor() const
-{
-    if (qApp)
-        qApp->setOverrideCursor(this->cursor ? Qt::ArrowCursor : Qt::BlankCursor);
 }
 
 QString Session::Core::parse_stylesheet(QString path) const
