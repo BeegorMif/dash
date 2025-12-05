@@ -8,29 +8,28 @@ set(base_directory ${CMAKE_CURRENT_SOURCE_DIR})
 set(resources_directory ${base_directory}/assets)
 set(sources_directory ${base_directory}/src)
 set(include_directory ${base_directory}/include)
+set(AASDK_PROTO_SRCS
+    ${CMAKE_SOURCE_DIR}/aasdk/build/aasdk_proto/MediaInfoChannelMetadataData.pb.cc
+)
 include(${base_directory}/cmake_modules/functions.cmake)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${base_directory}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${base_directory}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${base_directory}/bin)
 
-set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules/")
-SET(CMAKE_CXX_STANDARD 14)
-set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} -rdynamic)
+# Compiler flags
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} -Wall -pedantic -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-g -O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules/")
 find_package(Boost REQUIRED COMPONENTS system log OPTIONAL_COMPONENTS unit_test_framework)
 find_package(libusb-1.0 REQUIRED)
 find_package(Qt5 COMPONENTS Multimedia MultimediaWidgets Bluetooth Qml Quick QuickWidgets SerialBus SerialPort WebSockets DBus Xml Svg WebEngineWidgets REQUIRED)
@@ -75,17 +74,16 @@ if(GST_BUILD)
 endif(GST_BUILD)
 message(INFO "${GST_LIBRARIES}")
 
-link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-
 file(GLOB_RECURSE source_files ${sources_directory}/*.cpp ${include_directory}/*.hpp ${resources_directory}/*.qrc)
 
-add_executable(dash ${source_files})
+add_executable(dash ${source_files} ${AASDK_PROTO_SRCS})
 
 include(${base_directory}/cmake_modules/gitversion.cmake)
 
 target_include_directories(dash PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
-    )
+    ${CMAKE_SOURCE_DIR}/aasdk/build/aasdk_proto
+)
 
 target_include_directories(dash SYSTEM PRIVATE
     ${Qt5Svg_INCLUDE_DIRS}
