@@ -39,11 +39,6 @@ int main(int argc, char *argv[])
 
     QStringList args = dash.arguments();
 
-    QPixmap pixmap(QPixmap(":/splash.png").scaledToHeight(size.height() / 2));
-    QSplashScreen splash(pixmap);
-    splash.setMask(pixmap.mask());
-    splash.move(pos.x() + ((size.width() / 2) - (splash.width() / 2)), pos.y() + ((size.height() / 2) - (splash.height() / 2)));
-    splash.show();
     dash.processEvents();
 
     MainWindow window(QRect(pos, size));
@@ -52,7 +47,6 @@ int main(int argc, char *argv[])
     window.setWindowState(Qt::WindowFullScreen);
 
     window.show();
-    splash.finish(&window);
-
+    
     return dash.exec();
 }
