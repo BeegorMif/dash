@@ -18,8 +18,10 @@
 #include "openauto/Configuration/RecentAddressesList.hpp"
 #include "openauto/Service/AndroidAutoEntityFactory.hpp"
 #include "openauto/Service/ServiceFactory.hpp"
-
-
+#include <QWebSocket>
+#include <QVariantMap>
+#include "MediaInfoChannelMetadataData.pb.h"
+#include "MediaInfoChannelPlaybackData.pb.h"
 #include "app/pages/page.hpp"
 
 #include "DashLog.hpp"
@@ -76,6 +78,9 @@ class OpenAutoPage : public QStackedWidget, public Page {
    public:
     OpenAutoPage(Arbiter &arbiter, QWidget *parent = nullptr);
     void init() override;
+    QVariantMap buildMetadataMap(
+        const aasdk::proto::messages::MediaInfoChannelMetadataData &metadata,
+        const aasdk::proto::messages::MediaInfoChannelPlaybackData &playback);
 
    protected:
     void resizeEvent(QResizeEvent *event);
@@ -114,4 +119,15 @@ class OpenAutoPage : public QStackedWidget, public Page {
     OpenAutoFrame *frame;
     OpenAutoWorker *worker;
     const QString connected_icon_name;
+
+    private:
+        QString currentPlaybackStatus = "Stopped";  // Track current playback state
+        aasdk::proto::messages::MediaInfoChannelMetadataData m_lastMetadata;
+        aasdk::proto::messages::MediaInfoChannelPlaybackData m_lastPlayback;
+        void updateMPRIS(const aasdk::proto::messages::MediaInfoChannelMetadataData &metadata,
+                      const aasdk::proto::messages::MediaInfoChannelPlaybackData &playback);
+        QString playbackStateToString(int state);
+        QWebSocket *wsNode = nullptr;
+        void sendHandshake();
+
 };

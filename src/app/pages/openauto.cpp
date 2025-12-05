@@ -4,6 +4,11 @@
 #include "app/widgets/progress.hpp"
 #include "app/window.hpp"
 #include "DashLog.hpp"
+#include "MediaInfoChannelMetadataData.pb.h"
+#include <QVariantMap>
+#include <QStringList>
+
+Q_DECLARE_METATYPE(aasdk::proto::messages::MediaInfoChannelMetadataData)
 
 OpenAutoWorker::OpenAutoWorker(std::function<void(bool)> callback, bool night_mode, QWidget *frame, Arbiter &arbiter)
     : QObject(qApp),
@@ -440,6 +445,54 @@ void OpenAutoPage::init()
         aa_handler->setNightMode(mode == Session::Theme::Dark);
     });
 
+    wsNode = new QWebSocket();
+    connect(wsNode, &QWebSocket::connected, this, &OpenAutoPage::sendHandshake);
+    connect(wsNode, &QWebSocket::disconnected, []() {
+        DASH_LOG(info) << "[Node Websocket] WebSocket disconnected";
+    });
+    wsNode->open(QUrl("ws://localhost:3001"));  // Node server WebSocket URL
+    auto sendUpdate = [this](const QJsonObject &payload) {
+        QMetaObject::invokeMethod(wsNode, [payload, this]() {
+            if (wsNode->isValid()) {
+                wsNode->sendTextMessage(QJsonDocument(payload).toJson(QJsonDocument::Compact));
+            }
+        }, Qt::QueuedConnection);
+    };
+
+
+    connect(aa_handler, &AAHandler::aa_media_metadata_update,
+            [sendUpdate](const aasdk::proto::messages::MediaInfoChannelMetadataData &metadata){
+        QJsonObject payload;
+        payload["title"] = QString::fromStdString(metadata.track_name());
+        if(metadata.has_artist_name())
+            payload["artist"] = QString::fromStdString(metadata.artist_name());
+        if(metadata.has_album_name())
+            payload["album"] = QString::fromStdString(metadata.album_name());
+        if(metadata.has_album_art()) {
+            QByteArray artData = QByteArray::fromStdString(metadata.album_art());
+            payload["artBase64"] = QString(artData.toBase64());
+        }
+        payload["length"] = metadata.track_length();
+        payload["type"] = "metadata";
+
+        sendUpdate(payload);
+    });
+
+    connect(aa_handler, &AAHandler::aa_media_playback_update,
+            [sendUpdate](const aasdk::proto::messages::MediaInfoChannelPlaybackData &playback){
+        QJsonObject payload;
+        QString status;
+        switch(playback.playback_state()) {
+            case aasdk::proto::messages::MediaInfoChannelPlaybackData::PLAY: status = "Playing"; break;
+            case aasdk::proto::messages::MediaInfoChannelPlaybackData::PAUSE: status = "Paused"; break;
+            default: status = "Stopped"; break;
+        }
+        payload["playbackStatus"] = status;
+        payload["type"] = "playback";
+
+        sendUpdate(payload);
+    });
+
     this->addWidget(this->connect_msg());
     this->addWidget(this->frame);
 }
@@ -487,4 +540,56 @@ QWidget *OpenAutoPage::connect_msg()
     layout->addStretch();
 
     return widget;
+}
+
+QVariantMap OpenAutoPage::buildMetadataMap(
+    const aasdk::proto::messages::MediaInfoChannelMetadataData &metadata,
+    const aasdk::proto::messages::MediaInfoChannelPlaybackData &playback)
+{
+    QVariantMap map;
+
+    // Track metadata
+    if(metadata.has_track_name())
+        map["xesam:title"] = QString::fromStdString(metadata.track_name());
+
+    if(metadata.has_artist_name())
+        map["xesam:artist"] = QStringList{QString::fromStdString(metadata.artist_name())};
+
+    if(metadata.has_album_name())
+        map["xesam:album"] = QString::fromStdString(metadata.album_name());
+
+    if(metadata.has_album_art()){
+        QByteArray artData = QByteArray::fromStdString(metadata.album_art());
+        map["mpris:artUrl"] = QString("data:image/png;base64,%1").arg(QString(artData.toBase64()));
+    }
+
+    if(metadata.has_track_length())
+        map["mpris:length"] = static_cast<qlonglong>(metadata.track_length()) * 1000; // optional, MPRIS expects microseconds
+
+    // Playback status
+    QString status;
+    switch(playback.playback_state()) {
+        case aasdk::proto::messages::MediaInfoChannelPlaybackData::PLAY:
+            status = "Playing";
+            break;
+        case aasdk::proto::messages::MediaInfoChannelPlaybackData::PAUSE:
+            status = "Paused";
+            break;
+        default:
+            status = "Stopped";
+            break;
+    }
+    map["PlaybackStatus"] = status;
+
+    return map;
+}
+void OpenAutoPage::sendHandshake() {
+    DASH_LOG(info) << "[Node Websocket] Sending Handshake";
+    if(wsNode->isValid()) {
+        QJsonObject obj;
+        obj["client"] = "openauto";
+        obj["type"] = "handshake";
+
+        wsNode->sendTextMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
+    }
 }
