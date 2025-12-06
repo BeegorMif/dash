@@ -29,6 +29,19 @@ OpenAutoWorker::OpenAutoWorker(std::function<void(bool)> callback, bool night_mo
 {
     this->create_usb_workers();
     this->create_io_service_workers();
+    // this->app->enumerateDevices();
+auto promise = aasdk::usb::IConnectedAccessoriesEnumerator::Promise::defer(io_service);
+
+promise->then(
+    [this](bool result) {
+        OPENAUTO_LOG(info) << "[OpenAutoWorker] Devices enumeration result: " << result;
+    },
+    [this](aasdk::error::Error e) {
+        OPENAUTO_LOG(error) << "[OpenAutoWorker] Devices enumeration failed: " << e.what();
+    }
+);
+
+connected_accessories_enumerator->enumerate(std::move(promise));
 
     this->app->waitForDevice(true);
     AAHandler *aa_handler = arbiter.android_auto().handler;
