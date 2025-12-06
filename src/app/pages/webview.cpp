@@ -29,8 +29,8 @@ protected:
             case QWebEnginePage::WarningMessageLevel: levelStr = "Warning"; break;
             case QWebEnginePage::ErrorMessageLevel: levelStr = "Error"; break;
         }
-        qDebug() << "[JS Console][" << levelStr << "]" << message
-                 << "(Line:" << lineNumber << "Source:" << sourceID << ")";
+        // qDebug() << "[JS Console][" << levelStr << "]" << message
+        //          << "(Line:" << lineNumber << "Source:" << sourceID << ")";
     }
 };
 
