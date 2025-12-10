@@ -23,35 +23,6 @@ display_help() {
     echo
 }
 
-# Check Distro version
-if [ -f /etc/os-release ]; then
-  OS_DISTRO=$(source /etc/os-release; echo ${PRETTY_NAME%% *})
-  if [ $OS_DISTRO = "Debian" ]; then
-    isDebian=true
-    #determine if script is being run on bullseye or above
-    read -d . DEBIAN_VERSION < /etc/debian_version
-    if (( $DEBIAN_VERSION > 10 )); then
-      echo Detected Debian version of Bullseye or above
-      BULLSEYE=true
-    else
-      echo Older version of Debian detected
-      BULLSEYE=false
-    fi
-  elif [ $OS_DISTRO = "Ubuntu" ]; then
-    isUbuntu=true
-    UBUNTU_VERSION=$(source /etc/os-release; echo ${VERSION_ID%% *} | cut -c1-2)
-    if (( $UBUNTU_VERSION >= 22 )); then
-      echo Detcted Ubuntu version of Jammy or above
-      JAMMY=true
-    else
-      echo Older version of Ubuntu detected.
-      JAMMY=false
-    fi
-  else
-    echo "Unsupported OS detected. Recommended Debian 12 or Ubuntu 22.04"
-    exit 1
-  fi
-fi
 
 #check if /etc/rpi-issue exists, if not set the install Args to be false
 if [ -f /etc/rpi-issue ]
@@ -70,7 +41,7 @@ totalMem=$(free -tm | awk '/Total/ {print $2}')
 if [[ $totalMem -lt 1900 ]]; then
   echo "$totalMem MB RAM detected"
   echo "You may run out of memory while compiling with less than 2GB"
-  echo "Consider raising swap space or compiling on another machine"
+  echo "Consider raising swap space, using zram or compiling on another machine"
   sleep 5;
 fi
 
@@ -142,50 +113,72 @@ echo "Script directory is $script_path"
 
 installArgs="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} $installArgs"
 
-#Array of dependencies any new dependencies can be added here
 dependencies=(
-"alsa-utils"
-"cmake"
-"libboost-all-dev"
-"libusb-1.0-0-dev"
-"libssl-dev"
-"libprotobuf-dev"
-"protobuf-c-compiler"
-"protobuf-compiler"
-"libqt5multimedia5"
-"libqt5multimedia5-plugins"
-"libqt5multimediawidgets5"
-"qtmultimedia5-dev"
-"libqt5bluetooth5"
-"libqt5bluetooth5-bin"
-"qtconnectivity5-dev"
-"pulseaudio"
-"pulseaudio-module-bluetooth"
-"librtaudio-dev"
-"librtaudio6"
-"libkf5bluezqt-dev"
-"libtag1-dev"
-"qml-module-qtquick2"
-"libglib2.0-dev"
-"libgstreamer1.0-dev"
-"gstreamer1.0-plugins-base-apps"
-"gstreamer1.0-plugins-bad"
-"gstreamer1.0-libav"
-"gstreamer1.0-alsa"
-"libgstreamer-plugins-base1.0-dev"
-"qtdeclarative5-dev"
-"libgstreamer-plugins-bad1.0-dev"
-"libunwind-dev"
-"qml-module-qtmultimedia"
-"libqt5serialbus5-dev"
-"libqt5serialbus5-plugins"
-"libqt5serialport5-dev"
-"libqt5websockets5-dev"
-"libqt5svg5-dev"
-"build-essential"
-"libtool"
-"autoconf"
-"ffmpeg"
+    "alsa-utils"
+    "autoconf"
+    "build-essential"
+    "cmake"
+    "dnsmasq"
+    "ffmpeg"
+    "gstreamer1.0-alsa"
+    "gstreamer1.0-libav"
+    "gstreamer1.0-plugins-bad"
+    "gstreamer1.0-plugins-base"
+    "gstreamer1.0-plugins-base-apps"
+    "gstreamer1.0-plugins-good"
+    "gstreamer1.0-plugins-ugly"
+    "gstreamer1.0-pulseaudio"
+    "gstreamer1.0-qt5"
+    "gstreamer1.0-tools"
+    "hostapd"
+    "libboost-all-dev"
+    "libgles2"
+    "libgles2-mesa-dev"
+    "libglib2.0-dev"
+    "libgstreamer-plugins-bad1.0-dev"
+    "libgstreamer-plugins-base1.0-dev"
+    "libgstreamer1.0-dev"
+    "libkf5bluezqt-dev"
+    "librtaudio-dev"
+    "librtaudio6"
+    "libprotobuf-dev"
+    "libssl-dev"
+    "libtag1-dev"
+    "libtool"
+    "libunwind-dev"
+    "libusb-1.0-0-dev"
+    "protobuf-c-compiler"
+    "protobuf-compiler"
+    "pulseaudio"
+    "pulseaudio-module-bluetooth"
+    "udev"
+    "qtbase5-dev"
+    "qtdeclarative5-dev"
+    "qtmultimedia5-dev"
+    "qtconnectivity5-dev"
+    "libqt5serialbus5-dev"
+    "libqt5serialbus5-plugins"
+    "libqt5serialport5-dev"
+    "libqt5websockets5-dev"
+    "libqt5svg5-dev"
+    "libqt5xml5-dev"
+    "libqt5dbus5-dev"
+    "libqt5multimedia5"
+    "libqt5multimedia5-plugins"
+    "libqt5multimediawidgets5"
+    "libqt5widgets5"
+    "libqt5bluetooth5"
+    "libqt5bluetooth5-bin"
+    "libqt5webengine5"
+    "libqt5webenginewidgets5"
+    "qt5-qmake"
+    "qt5-qmake-bin"
+    "qtwebengine5-dev"
+
+    # QML modules used
+    "qml-module-qtbluetooth"
+    "qml-module-qtmultimedia"
+    "qml-module-qtquick2"
 )
 
 
@@ -287,12 +280,12 @@ if [ $bluez = false ]
 
     echo Installing bluez
     sudo apt-get install -y libdbus-1-dev libudev-dev libical-dev libreadline-dev libjson-c-dev
-    wget www.kernel.org/pub/linux/bluetooth/bluez-5.63.tar.xz
-    tar -xvf bluez-5.63.tar.xz bluez-5.63/
-    rm bluez-5.63.tar.xz
-    cd bluez-5.63
+    wget www.kernel.org/pub/linux/bluetooth/bluez-5.83.tar.xz
+    tar -xvf bluez-5.83.tar.xz bluez-5.83/
+    rm bluez-5.83.tar.xz
+    cd bluez-5.83
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --enable-library --disable-manpages --enable-deprecated
-    make
+    make -j$(nproc)
     sudo make install
     cd ..
 fi
@@ -341,7 +334,7 @@ else
   cd build
 
   #beginning cmake
-  cmake -DCMAKE_BUILD_TYPE=Release ../
+  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-flto -march=native" ../
   if [[ $? -eq 0 ]]; then
       echo -e Aasdk CMake completed successfully'\n'
   else
@@ -350,7 +343,7 @@ else
   fi
 
   #beginning make
-  make -j2
+  make -j$(nproc)
 
   if [[ $? -eq 0 ]]; then
     echo -e Aasdk Make completed successfully '\n'
@@ -421,7 +414,7 @@ else
   fi
 
   #beginning make
-  make
+  make -j$(nproc)
 
   if [[ $? -eq 0 ]]; then
     echo -e h264bitstream Make completed successfully '\n'
@@ -472,12 +465,11 @@ if [ $gstreamer = true ]; then
   #change into newly cloned directory
   cd qt-gstreamer
 
-  if [ $BULLSEYE = true ] || [ $JAMMY = true ]; then
-    #apply 1.18 patch
-    echo Applying qt-gstreamer 1.18 patch
-    git apply $script_path/patches/qt-gstreamer-1.18.patch
-  fi
 
+  
+  echo Applying qt-gstreamer 1.18 patch
+  git apply $script_path/patches/qt-gstreamer-1.18.patch
+  
   #apply greenline patch
   echo Apply greenline patch
   git apply $script_path/patches/greenline_fix.patch
@@ -500,7 +492,7 @@ if [ $gstreamer = true ]; then
 
   #run cmake
   echo Beginning cmake
-  cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH) -DCMAKE_INSTALL_INCLUDEDIR=include -DQT_VERSION=5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-std=c++11
+  cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH) -DCMAKE_INSTALL_INCLUDEDIR=include -DQT_VERSION=5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++11 -flto -march=native"
 
   if [[ $? -eq 0 ]]; then
     echo -e Make ok'\n'
@@ -510,7 +502,7 @@ if [ $gstreamer = true ]; then
   fi
 
   echo Making Gstreamer
-  make
+  make -j$(nproc)
 
   if [[ $? -eq 0 ]]; then
     echo -e Gstreamer make ok'\n'
@@ -580,7 +572,7 @@ else
   cd build
 
   echo Beginning openauto cmake
-  cmake ${installArgs} -DGST_BUILD=true ../
+  cmake ${installArgs} -DGST_BUILD=true -DCMAKE_CXX_FLAGS="-flto -march=native" ../
   if [[ $? -eq 0 ]]; then
     echo -e Openauto CMake OK'\n'
   else
@@ -589,7 +581,7 @@ else
   fi
 
   echo Beginning openauto make
-  make
+  make -j2
 
   if [[ $? -eq 0 ]]; then
     echo -e Openauto make OK'\n'
@@ -633,7 +625,7 @@ else
 
 	echo -e Installing dash'\n'
   echo Running CMake for dash
-  cmake ${installArgs} -DGST_BUILD=TRUE ../
+  cmake ${installArgs} -DGST_BUILD=TRUE -DCMAKE_CXX_FLAGS="-flto -march=native" ../
   if [[ $? -eq 0 ]]; then
     echo -e Dash CMake OK'\n'
   else
@@ -642,7 +634,7 @@ else
   fi
 
   echo Running Dash make
-  make
+  make -j2
   
   if [[ $? -eq 0 ]]; then
       echo -e Dash make ok, executable can be found ../bin/dash
