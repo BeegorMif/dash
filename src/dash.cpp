@@ -46,8 +46,6 @@ int main(int argc, char *argv[])
     window.setWindowIcon(QIcon(":/logo.png"));
     window.setWindowFlags(Qt::FramelessWindowHint);
     window.setWindowState(Qt::WindowFullScreen);
-    window.setAttribute(Qt::WA_TranslucentBackground, false);
-    window.setStyleSheet("background-color: black;");
 
     window.show();
     QProcess::execute("plymouth quit --wait");
