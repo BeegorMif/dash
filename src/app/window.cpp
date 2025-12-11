@@ -18,6 +18,9 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
 {
     this->setAttribute(Qt::WA_TranslucentBackground, true);
 
+    nodeBridge = new NodeBridge(this);
+    nodeBridge->connectToServer(QUrl("ws://localhost:3001"));
+
     auto container = new QWidget(this);
     stack = new QStackedLayout(container);
     stack->setStackingMode(QStackedLayout::StackAll);
@@ -45,6 +48,7 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     menuSpacer->raise();
 
     openAutoFrame = new OpenAutoPage(arbiter, debugContainer);
+    openAutoFrame->setNodeBridge(nodeBridge);
     openAutoFrame->init();
     openAutoFrame->setParent(debugContainer);
     openAutoFrame->setVisible(false);

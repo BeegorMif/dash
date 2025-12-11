@@ -5,6 +5,7 @@
 #include "app/window.hpp"
 #include "DashLog.hpp"
 #include "MediaInfoChannelMetadataData.pb.h"
+#include "app/webInterface.hpp"
 #include <QVariantMap>
 #include <QStringList>
 
@@ -437,9 +438,6 @@ void OpenAutoPage::init()
 
     this->frame = new OpenAutoFrame(this);
 
-    std::function<void(bool)> callback = [frame = this->frame](bool active) { frame->toggle(active); };
-    this->worker = new OpenAutoWorker(callback, this->arbiter.theme().mode == Session::Theme::Dark, frame, this->arbiter);
-
     connect(this->frame, &OpenAutoFrame::toggle, [this](bool enable){
         this->setCurrentIndex(enable ? 1 : 0);
 
@@ -451,19 +449,20 @@ void OpenAutoPage::init()
                 icon.addFile(QString(":/icons/%1.svg").arg(this->icon_name()), QSize(), QIcon::Active, QIcon::Off);
             this->button()->setIcon(icon);
         }
+
+        if(nodeBridge) {
+            nodeBridge->sendAAStatus(enable);
+        }
     });
-    
+
+    std::function<void(bool)> callback = [frame = this->frame](bool active){ frame->toggle(active); };
+    this->worker = new OpenAutoWorker(callback, this->arbiter.theme().mode == Session::Theme::Dark, frame, this->arbiter);
+
     AAHandler *aa_handler = this->arbiter.android_auto().handler;
     connect(&this->arbiter, &Arbiter::mode_changed, [this, aa_handler](Session::Theme::Mode mode){
         aa_handler->setNightMode(mode == Session::Theme::Dark);
     });
 
-    wsNode = new QWebSocket();
-    connect(wsNode, &QWebSocket::connected, this, &OpenAutoPage::sendHandshake);
-    connect(wsNode, &QWebSocket::disconnected, []() {
-        DASH_LOG(info) << "[Node Websocket] WebSocket disconnected";
-    });
-    wsNode->open(QUrl("ws://localhost:3001"));  // Node server WebSocket URL
     auto sendUpdate = [this](const QJsonObject &payload) {
         QMetaObject::invokeMethod(wsNode, [payload, this]() {
             if (wsNode->isValid()) {
@@ -528,6 +527,10 @@ void OpenAutoPage::resizeEvent(QResizeEvent *event)
     this->worker->update_size();
 }
 
+void OpenAutoPage::setNodeBridge(NodeBridge* bridge)
+{
+    this->nodeBridge = bridge;
+}
 QWidget *OpenAutoPage::connect_msg()
 {
     QWidget *widget = new QWidget(this);
