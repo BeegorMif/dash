@@ -515,7 +515,6 @@ void OpenAutoPage::resizeEvent(QResizeEvent *event)
     QWidget *p = this->parentWidget();
     if (!p) return;
 
-    const int menuWidth = 70;
     int maxW = p->width();
     int maxH = p->height();
 
