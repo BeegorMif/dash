@@ -513,6 +513,17 @@ void OpenAutoPage::init()
 void OpenAutoPage::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
+    QWidget *p = this->parentWidget();
+    if (!p) return;
+
+    const int menuWidth = 70;
+    int maxW = p->width();
+    int maxH = p->height();
+
+    if (this->width() > maxW || this->height() > maxH) {
+        this->setGeometry(0, 0, qMin(this->width(), maxW), qMin(this->height(), maxH));
+    }
+    
     this->frame->resize(this->size());
     this->worker->update_size();
 }

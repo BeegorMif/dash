@@ -1,231 +1,125 @@
-#include <QHBoxLayout>
-#include <QLocale>
-#include <QPushButton>
-#include <QFrame>
-#include <QStackedWidget>
-#include <QTimer>
-#include <QProcess>
-
-#include "app/utilities/icon_engine.hpp"
-#include "app/widgets/dialog.hpp"
-
 #include "app/window.hpp"
+#include "app/webInterface.hpp"
+#include "app/pages/openauto.hpp"
 #include "app/usb_monitor.hpp"
-#include "app/pages/shutdown_page.hpp"
+#include "app/arbiter.hpp"
+#include <QWebEngineView>
+#include <QWebChannel>
+#include <QStackedLayout>
+#include <QTimer>
+#include <QDebug>
+#include <QTcpSocket>
+#include <QUrl>
+#include <QResizeEvent>
 
-// ---------------- Dash ----------------
-
-Dash::NavRail::NavRail()
-    : group()
-    , timer()
-    , layout(new QVBoxLayout())
-{
-    this->layout->setContentsMargins(0, 0, 0, 0);
-    this->layout->setSpacing(0);
-}
-
-Dash::Body::Body()
-    : layout(new QVBoxLayout())
-    , frame(new QStackedLayout())
-{
-    this->layout->setContentsMargins(0, 0, 0, 0);
-    this->layout->setSpacing(0);
-
-    this->frame->setContentsMargins(0, 0, 0, 0);
-    this->layout->addLayout(this->frame, 1);
-
-    auto msg_ref = new QWidget();
-    msg_ref->setObjectName("MsgRef");
-    this->layout->addWidget(msg_ref);
-}
-
-Dash::Dash(Arbiter &arbiter)
-    : QWidget()
-    , arbiter(arbiter)
-    , rail()
-    , body()
-{
-    auto layout = new QHBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
-
-    layout->addLayout(this->rail.layout);
-    layout->addLayout(this->body.layout);
-
-    connect(&this->rail.group, QOverload<int>::of(&QButtonGroup::buttonPressed), [this](int id){
-        this->arbiter.set_curr_page(id);
-        this->rail.timer.start();
-    });
-    connect(&this->arbiter, &Arbiter::curr_page_changed, [this](Page *page){
-        this->set_page(page);
-    });
-    connect(&this->arbiter, &Arbiter::page_changed, [this](Page *page, bool enabled){
-        int id = this->arbiter.layout().page_id(page);
-        this->rail.group.button(id)->setVisible(enabled);
-
-        if ((this->arbiter.layout().curr_page == page) && !enabled)
-            this->arbiter.set_curr_page(this->arbiter.layout().next_enabled_page(page));
-    });
-}
-
-void Dash::init()
-{
-    for (auto page : this->arbiter.layout().pages()) {
-        auto button = page->button();
-        button->setCheckable(true);
-        button->setFlat(true);
-        QIcon icon(new StylizedIconEngine(this->arbiter, QString(":/icons/%1.svg").arg(page->icon_name()), true));
-        this->arbiter.forge().iconize(icon, button, 32);
-
-        this->rail.group.addButton(button, this->arbiter.layout().page_id(page));
-        this->rail.layout->addWidget(button);
-        this->body.frame->addWidget(page->container());
-
-        page->init();
-        button->setVisible(page->enabled());
-    }
-    this->set_page(this->arbiter.layout().curr_page);
-}
-
-void Dash::set_page(Page *page)
-{
-    auto id = this->arbiter.layout().page_id(page);
-    this->rail.group.button(id)->setChecked(true);
-    this->body.frame->setCurrentWidget(page->container());
-}
-
-QWidget *Dash::power_control() const
-{
-    auto widget = new QWidget();
-    auto layout = new QHBoxLayout(widget);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
-
-    auto restart = new QPushButton();
-    restart->setFlat(true);
-    this->arbiter.forge().iconize("refresh", restart, 36);
-    connect(restart, &QPushButton::clicked, [this]{
-        this->arbiter.settings().sync();
-        sync();
-        std::ignore = system(Session::System::REBOOT_CMD);
-    });
-    layout->addWidget(restart);
-
-    auto power_off = new QPushButton();
-    power_off->setFlat(true);
-    this->arbiter.forge().iconize("power_settings_new", power_off, 36);
-    connect(power_off, &QPushButton::clicked, [this]{
-        this->arbiter.settings().sync();
-        sync();
-        std::ignore = system(Session::System::SCREENBLANK_CMD);
-        std::ignore = system(Session::System::SHUTDOWN_CMD);
-    });
-    layout->addWidget(power_off);
-
-    return widget;
-}
-
-// ---------------- MainWindow ----------------
-
-MainWindow::MainWindow(QRect geometry)
-    : QMainWindow()
-    , arbiter(this->init(geometry))
-    , stack(new QStackedWidget())
-    , shutdownPage(nullptr)
-    , usbMonitor(nullptr)
+MainWindow::MainWindow(QRect geometry, QWidget *parent)
+    : QMainWindow(parent)
+    , arbiter(this)
 {
     this->setAttribute(Qt::WA_TranslucentBackground, true);
 
-    auto frame = new QFrame();
-    auto layout = new QVBoxLayout(frame);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
+    auto container = new QWidget(this);
+    stack = new QStackedLayout(container);
+    stack->setStackingMode(QStackedLayout::StackAll);
+    stack->setContentsMargins(0,0,70,0);
+    stack->setSpacing(0);
 
-    layout->addWidget(this->stack);
+    webView = new QWebEngineView(container);
+    webView->setObjectName("WebView");
+    webView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    stack->addWidget(webView);
 
-    this->setCentralWidget(frame);
+    int menuWidth = 70;
+    debugContainer = new QWidget(container);
+    debugContainer->setObjectName("OA_DebugContainer");
+    debugContainer->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    debugContainer->setGeometry(0, 0, container->width(), container->height());
 
-    auto dash = new Dash(this->arbiter);
-    this->stack->addWidget(dash);
-    dash->init();
+    stack->addWidget(debugContainer);
 
-    // ---- USB Monitor Thread ----
-    usbMonitor = new UsbMonitor(this);
-    connect(usbMonitor, &UsbMonitor::phoneDisconnected, this, &MainWindow::startShutdownCountdown);
-    connect(usbMonitor, &UsbMonitor::phoneConnected, this, &MainWindow::cancelShutdownCountdown);
+    QWidget *menuSpacer = new QWidget(debugContainer);
+    menuSpacer->setFixedWidth(menuWidth);
+    menuSpacer->setGeometry(debugContainer->width() - menuWidth, 0, menuWidth, debugContainer->height());
+    menuSpacer->setAttribute(Qt::WA_TransparentForMouseEvents);
+    menuSpacer->setStyleSheet("background: transparent;");
+    menuSpacer->raise();
+
+    openAutoFrame = new OpenAutoPage(arbiter, debugContainer);
+    openAutoFrame->init();
+    openAutoFrame->setParent(debugContainer);
+    openAutoFrame->setVisible(false);
+    openAutoFrame->raise();
+    this->setCentralWidget(container);
+
+    channel = new QWebChannel(webView->page());
+    webInterface = new WebInterface(this);
+    channel->registerObject("qtBridge", webInterface);
+    webView->page()->setWebChannel(channel);
+
+    connect(webInterface, &WebInterface::tabChangedSignal,
+        this, &MainWindow::onTabChanged);
+
+    loadWebUi();
+
+    QTimer::singleShot(0, this, [this]() {
+        this->onTabChanged("android_auto");
+    });
 }
 
-MainWindow *MainWindow::init(QRect geometry)
+MainWindow* MainWindow::init(QRect geometry)
 {
-    this->setFixedSize(geometry.size());
-    this->move(geometry.topLeft());
-
+    this->setGeometry(geometry);
     return this;
 }
 
 void MainWindow::showEvent(QShowEvent *event)
 {
-    QWidget::showEvent(event);
-    this->arbiter.update();
+    QMainWindow::showEvent(event);
+    qDebug() << "[Dash] MainWindow shown";
 }
 
-
-// ---------------- Shutdown Logic ----------------
-
-void MainWindow::startShutdownCountdown()
+void MainWindow::resizeEvent(QResizeEvent *event)
 {
-    if (shutdownDelayTimer) {
-        shutdownDelayTimer->stop();
-        delete shutdownDelayTimer;
+    QMainWindow::resizeEvent(event);
+
+    int menuWidth = 70;
+    if(debugContainer) {
+        debugContainer->setGeometry(0, 0, this->centralWidget()->width() - menuWidth, this->centralWidget()->height());
+        if(openAutoFrame) {
+            openAutoFrame->setGeometry(0, 0, debugContainer->width(), debugContainer->height());
+        }
     }
+    qDebug() << "[Dash] openAutoFrame geometry:" << openAutoFrame->geometry();
+    qDebug() << "[Dash] debugContainer geometry:" << debugContainer->geometry();
 
-    shutdownDelayTimer = new QTimer(this);
-    shutdownDelayTimer->setSingleShot(true);
-    shutdownDelayTimer->setInterval(2000); // 2 seconds delay
-    connect(shutdownDelayTimer, &QTimer::timeout, [this]() {
-        shutdownDelayTimer->deleteLater();
-        shutdownDelayTimer = nullptr;
-
-        if (shutdownPage) return;
-
-        shutdownPage = new ShutdownPage(this);
-        stack->addWidget(shutdownPage);
-        stack->setCurrentWidget(shutdownPage);
-        connect(shutdownPage, &ShutdownPage::cancelled, this, &MainWindow::cancelShutdownCountdown);
-        connect(shutdownPage, &ShutdownPage::countdownFinished, this, &MainWindow::performShutdown);
-
-        shutdownPage->startCountdown(10);
-    });
-
-    shutdownDelayTimer->start();
 }
 
-void MainWindow::cancelShutdownCountdown()
+void MainWindow::loadWebUi()
 {
-    // Cancel any pending delayed start
-    if (shutdownDelayTimer) {
-        shutdownDelayTimer->stop();
-        shutdownDelayTimer->deleteLater();
-        shutdownDelayTimer = nullptr;
+    if(!webView) return;
+
+    QTcpSocket socket;
+    socket.connectToHost("127.0.0.1", 5173);
+    if(socket.waitForConnected(100)) {
+        socket.disconnectFromHost();
+        webView->load(QUrl("http://127.0.0.1:5173"));
+    } else {
+        // fallback to prod port
+        webView->load(QUrl("http://127.0.0.1:3000"));
     }
-
-    if (!shutdownPage)
-        return;
-
-    stack->removeWidget(shutdownPage);
-    shutdownPage->deleteLater();
-    shutdownPage = nullptr;
-
-    if (stack->count() > 0)
-        stack->setCurrentIndex(0);
-
-    DASH_LOG(info) << "Shutdown cancelled or phone reconnected";
 }
 
-void MainWindow::performShutdown()
+void MainWindow::onTabChanged(const QString &tabName)
 {
-    DASH_LOG(info) << "Executing system shutdown";
-    cancelShutdownCountdown();
-    std::ignore = system(Session::System::SCREENBLANK_CMD);
-    std::ignore = system(Session::System::SHUTDOWN_CMD);
+    currentTab = tabName;
+
+    if(tabName == "android_auto") {
+        openAutoFrame->setVisible(true);
+        openAutoFrame->setParent(debugContainer);
+        openAutoFrame->raise();
+        debugContainer->setVisible(true);
+        debugContainer->raise();
+    } else {
+        openAutoFrame->setVisible(false);
+    }
 }
