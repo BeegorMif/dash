@@ -89,9 +89,6 @@ void MainWindow::resizeEvent(QResizeEvent *event)
             openAutoFrame->setGeometry(0, 0, debugContainer->width(), debugContainer->height());
         }
     }
-    qDebug() << "[Dash] openAutoFrame geometry:" << openAutoFrame->geometry();
-    qDebug() << "[Dash] debugContainer geometry:" << debugContainer->geometry();
-
 }
 
 void MainWindow::loadWebUi()
