@@ -23,6 +23,7 @@
 #include "MediaInfoChannelMetadataData.pb.h"
 #include "MediaInfoChannelPlaybackData.pb.h"
 #include "app/pages/page.hpp"
+#include "app/nodeBridge.hpp"
 
 #include "DashLog.hpp"
 
@@ -78,6 +79,7 @@ class OpenAutoPage : public QStackedWidget, public Page {
    public:
     OpenAutoPage(Arbiter &arbiter, QWidget *parent = nullptr);
     void init() override;
+    void setNodeBridge(NodeBridge *bridge);
     QVariantMap buildMetadataMap(
         const aasdk::proto::messages::MediaInfoChannelMetadataData &metadata,
         const aasdk::proto::messages::MediaInfoChannelPlaybackData &playback);
@@ -129,5 +131,6 @@ class OpenAutoPage : public QStackedWidget, public Page {
         QString playbackStateToString(int state);
         QWebSocket *wsNode = nullptr;
         void sendHandshake();
+        NodeBridge *nodeBridge = nullptr;
 
 };

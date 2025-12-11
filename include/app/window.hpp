@@ -7,6 +7,7 @@
 #include <QTimer>
 #include "AAHandler.hpp"
 #include "app/arbiter.hpp"
+#include "app/nodeBridge.hpp"
 
 class WebInterface;
 class OpenAutoPage;
@@ -21,6 +22,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QRect geometry, QWidget *parent = nullptr);
     MainWindow* init(QRect geometry);
+    NodeBridge* nodeBridge;
     void onTabChanged(const QString &tabName);
 
 protected:
