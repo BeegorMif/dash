@@ -425,10 +425,11 @@ QLayout *OpenAutoPage::Settings::buttons_row_widget()
     return layout;
 }
 
-OpenAutoPage::OpenAutoPage(Arbiter &arbiter, QWidget *parent)
+OpenAutoPage::OpenAutoPage(Arbiter &arbiter, QWidget *parent, WebInterface* webInterface)
     : QStackedWidget(parent)
     , Page(arbiter, "Android Auto", "android_auto", true, this)
     , connected_icon_name("android_auto_color")
+    , webInterface(webInterface)
 {
 }
 
@@ -462,7 +463,13 @@ void OpenAutoPage::init()
     connect(&this->arbiter, &Arbiter::mode_changed, [this, aa_handler](Session::Theme::Mode mode){
         aa_handler->setNightMode(mode == Session::Theme::Dark);
     });
-
+    if (webInterface) {
+        connect(webInterface, &WebInterface::darkModeChangedSignal, [aa_handler](bool darkModeActive){
+            if (aa_handler) {
+                aa_handler->setNightMode(darkModeActive);
+            }
+        });
+    }
     auto sendUpdate = [this](const QJsonObject &payload) {
         QMetaObject::invokeMethod(wsNode, [payload, this]() {
             if (wsNode->isValid()) {

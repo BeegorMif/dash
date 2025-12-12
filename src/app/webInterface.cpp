@@ -12,3 +12,9 @@ void WebInterface::tabChanged(const QString &tab)
     qDebug() << "[Dash] WebChannel received tabChanged:" << tab;
 
 }
+void WebInterface::darkModeChanged(bool state)
+{
+    emit darkModeChangedSignal(state);
+    qDebug() << "[Dash] WebChannel received dark mode:" << state;
+
+}

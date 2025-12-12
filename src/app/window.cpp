@@ -47,7 +47,12 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     menuSpacer->setStyleSheet("background: transparent;");
     menuSpacer->raise();
 
-    openAutoFrame = new OpenAutoPage(arbiter, debugContainer);
+    channel = new QWebChannel(webView->page());
+    webInterface = new WebInterface(this);
+    channel->registerObject("qtBridge", webInterface);
+    webView->page()->setWebChannel(channel);
+    
+    openAutoFrame = new OpenAutoPage(arbiter, debugContainer, webInterface);
     openAutoFrame->setNodeBridge(nodeBridge);
     openAutoFrame->init();
     openAutoFrame->setParent(debugContainer);
@@ -55,10 +60,6 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     openAutoFrame->raise();
     this->setCentralWidget(container);
 
-    channel = new QWebChannel(webView->page());
-    webInterface = new WebInterface(this);
-    channel->registerObject("qtBridge", webInterface);
-    webView->page()->setWebChannel(channel);
 
     connect(webInterface, &WebInterface::tabChangedSignal,
         this, &MainWindow::onTabChanged);
@@ -119,8 +120,10 @@ void MainWindow::onTabChanged(const QString &tabName)
         openAutoFrame->setParent(debugContainer);
         openAutoFrame->raise();
         debugContainer->setVisible(true);
+        debugContainer->setAttribute(Qt::WA_TransparentForMouseEvents, false);
         debugContainer->raise();
     } else {
         openAutoFrame->setVisible(false);
+        debugContainer->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     }
 }
