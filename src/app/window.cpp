@@ -146,6 +146,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 void MainWindow::onTabChanged(const QString &tabName)
 {
     currentTab = tabName;
+    DASH_LOG(debug) << "Tab Change To:" << tabName.toStdString();
 
     if(tabName == "android_auto") {
         openAutoFrame->setVisible(true);
