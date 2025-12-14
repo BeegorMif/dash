@@ -9,7 +9,6 @@
 #include <QNetworkReply>
 #include <QProcess>
 #include <QDebug>
-#include <QWebChannel>
 
 // ---------------------- Subclass QWebEnginePage for console logging ----------------------
 class DebugWebEnginePage : public QWebEnginePage {
@@ -34,26 +33,6 @@ protected:
     }
 };
 
-// ---------------------- Bridge object for WebChannel ----------------------
-class WebviewBridge : public QObject {
-    Q_OBJECT
-public:
-    WebviewBridge(Arbiter &arbiter, QObject* parent = nullptr) : QObject(parent), arbiter_(arbiter) {}
-
-public slots:
-    void setDarkModeFromWeb(bool enabled) {
-        qDebug() << "[WebviewBridge] setDarkModeFromWeb called with:" << enabled;
-        // Pass this to arbiter
-        arbiter_.set_mode(enabled ? Session::Theme::Dark : Session::Theme::Light);
-    }
-    Q_INVOKABLE void setPage(int page) {
-        qDebug() << "[WebBridge] Setting curr_page to" << page;
-        arbiter_.set_curr_page(page);
-    }
-
-private:
-    Arbiter &arbiter_;
-};
 
 // ---------------------- WebviewPage ----------------------
 WebviewPage::WebviewPage(Arbiter &arbiter, QWidget *parent)
@@ -93,25 +72,12 @@ QWidget* WebviewPage::loadWebview() {
     profile->setHttpCacheType(QWebEngineProfile::MemoryHttpCache);
     profile->setPersistentCookiesPolicy(QWebEngineProfile::NoPersistentCookies);
 
-    
-    // Setup WebChannel
-    QWebChannel* channel = new QWebChannel(view_->page());
-    auto bridge = new WebviewBridge(arbiter_, view_);
-    channel->registerObject(QStringLiteral("qt"), bridge);
-    view_->page()->setWebChannel(channel);
-    view_->page()->runJavaScript("console.log('WebChannel loaded');");
-    
+        
     // Page loaded signal
     connect(view_, &QWebEngineView::loadFinished, this, [this](bool ok){
         pageLoaded_ = ok;
         if(ok){
             qDebug() << "[WebView] Page loaded";
-
-            // Setup JS function for dark mode bridge
-            view_->page()->runJavaScript(
-                "window.setDarkMode = function(enabled) { qt.setDarkModeFromWeb(enabled); };"
-
-            );
 
             // Process queued media events
             QTimer::singleShot(50, this, [this](){

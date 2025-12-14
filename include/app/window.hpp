@@ -2,13 +2,11 @@
 
 #include <QMainWindow>
 #include <QWebEngineView>
-#include <QWebChannel>
 #include <QStackedLayout>
 #include <QTimer>
 #include "AAHandler.hpp"
 #include "app/arbiter.hpp"
 
-class WebInterface;
 class OpenAutoPage;
 class UsbMonitor;
 class ShutdownPage;
@@ -40,8 +38,6 @@ private:
 
 private:
     QWebEngineView *webView = nullptr;
-    QWebChannel *channel = nullptr;
-    WebInterface *webInterface = nullptr;
 
     QWidget *debugContainer = nullptr;
     OpenAutoPage *openAutoFrame = nullptr;

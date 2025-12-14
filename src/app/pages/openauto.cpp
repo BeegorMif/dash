@@ -5,7 +5,6 @@
 #include "app/window.hpp"
 #include "DashLog.hpp"
 #include "MediaInfoChannelMetadataData.pb.h"
-#include "app/webInterface.hpp"
 #include <QVariantMap>
 #include <QStringList>
 
@@ -425,11 +424,10 @@ QLayout *OpenAutoPage::Settings::buttons_row_widget()
     return layout;
 }
 
-OpenAutoPage::OpenAutoPage(Arbiter &arbiter, QWidget *parent, WebInterface* webInterface, NodeBridge* nodeBridge)
+OpenAutoPage::OpenAutoPage(Arbiter &arbiter, QWidget *parent, NodeBridge* nodeBridge)
     : QStackedWidget(parent)
     , Page(arbiter, "Android Auto", "android_auto", true, this)
     , connected_icon_name("android_auto_color")
-    , webInterface(webInterface)
     , nodeBridge_(nodeBridge)
 {
 }
@@ -469,13 +467,6 @@ void OpenAutoPage::init()
     connect(nodeBridge_, &NodeBridge::darkMode, this, [this, aa_handler](bool enabled) {
         aa_handler->setNightMode(enabled);
     });
-    if (webInterface) {
-        connect(webInterface, &WebInterface::darkModeChangedSignal, [aa_handler](bool darkModeActive){
-            if (aa_handler) {
-                aa_handler->setNightMode(darkModeActive);
-            }
-        });
-    }
 
     auto sendUpdate = [this](const QJsonObject &payload) {
         if (!nodeBridge_)

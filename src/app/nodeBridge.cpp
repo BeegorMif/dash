@@ -95,7 +95,7 @@ void NodeBridge::onTextMessageReceived(const QString &message)
         QJsonDocument::fromJson(message.toUtf8());
 
     if (!doc.isObject()) {
-        DASH_LOG(debug) <<< "[Node Bridge] Invalid JSON Message"
+        DASH_LOG(debug)     << "[Node Bridge] Invalid JSON Message";
         return;
     }
 

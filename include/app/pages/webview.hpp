@@ -2,7 +2,6 @@
 
 #include <QtWidgets>
 #include <QWebEngineView>
-#include <QWebChannel>
 #include <QQueue>
 
 #include "app/config.hpp"
@@ -38,7 +37,6 @@ private:
     void processMediaEvent(const MediaEvent &event);
 
     QWebEngineView* view_;
-    QWebChannel* webChannel_;  // add this
     bool nodeOnline_;
     bool pageLoaded_;
     QQueue<MediaEvent> mediaEventQueue_;

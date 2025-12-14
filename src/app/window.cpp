@@ -1,11 +1,9 @@
 #include "app/window.hpp"
-#include "app/webInterface.hpp"
 #include "app/pages/openauto.hpp"
 #include "app/usb_monitor.hpp"
 #include "app/arbiter.hpp"
 #include "app/nodeBridge.hpp"
 #include <QWebEngineView>
-#include <QWebChannel>
 #include <QStackedLayout>
 #include <QTimer>
 #include <QDebug>
@@ -45,16 +43,11 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     menuSpacer->setStyleSheet("background: transparent;");
     menuSpacer->raise();
 
-    channel = new QWebChannel(webView->page());
-    webInterface = new WebInterface(this);
-    channel->registerObject("qtBridge", webInterface);
-    webView->page()->setWebChannel(channel);
-
     nodeBridge_ = new NodeBridge(this, this);
     nodeBridge_->connectToServer(QUrl("ws://localhost:3001"));
     nodeBridge_->setMainWindow(this);
 
-    openAutoFrame = new OpenAutoPage(arbiter, debugContainer, webInterface, nodeBridge_);
+    openAutoFrame = new OpenAutoPage(arbiter, debugContainer, nodeBridge_);
     openAutoFrame->setNodeBridge(nodeBridge_);
     openAutoFrame->init();
     openAutoFrame->setParent(debugContainer);
@@ -71,9 +64,6 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
 
     blackoutOverlay->installEventFilter(this);
     
-    connect(webInterface, &WebInterface::tabChangedSignal,
-        this, &MainWindow::onTabChanged);
-
     loadWebUi();
 
     QTimer::singleShot(0, this, [this]() {
