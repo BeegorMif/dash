@@ -7,13 +7,13 @@
 #include <QTimer>
 #include "AAHandler.hpp"
 #include "app/arbiter.hpp"
-#include "app/nodeBridge.hpp"
 
 class WebInterface;
 class OpenAutoPage;
 class UsbMonitor;
 class ShutdownPage;
 class Arbiter;
+class NodeBridge;
 
 class MainWindow : public QMainWindow
 {
@@ -22,8 +22,12 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QRect geometry, QWidget *parent = nullptr);
     MainWindow* init(QRect geometry);
-    NodeBridge* nodeBridge;
+    NodeBridge* nodeBridge() const { return nodeBridge_; }
+    bool blackoutMode = false;
+    QWidget* blackoutOverlay = nullptr;
     void onTabChanged(const QString &tabName);
+    void setBlackout(bool enable);
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 protected:
     void showEvent(QShowEvent *event) override;
@@ -47,6 +51,7 @@ private:
     QTimer *shutdownDelayTimer = nullptr;
 
     QStackedLayout *stack = nullptr;
+    NodeBridge* nodeBridge_ = nullptr;
 
     Arbiter arbiter;
 

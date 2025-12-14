@@ -1,73 +1,113 @@
 #include "app/nodeBridge.hpp"
-#include <QDebug>
+#include "app/window.hpp"
+#include "DashLog.hpp"
 
-NodeBridge::NodeBridge(QObject *parent)
-    : QObject(parent)
+NodeBridge::NodeBridge(QObject *parent, MainWindow* window)
+    : QObject(parent),
+      mainWindow(window)
 {
-    ws = new QWebSocket();
-    connect(ws, &QWebSocket::connected, this, &NodeBridge::onConnected);
-    connect(ws, &QWebSocket::disconnected, this, &NodeBridge::onDisconnected);
-    connect(ws, &QWebSocket::textMessageReceived, this, &NodeBridge::onTextMessageReceived);
+    socket_ = new QWebSocket(QString(),
+                            QWebSocketProtocol::VersionLatest,
+                            this);
+
+    connect(socket_, &QWebSocket::connected, this, &NodeBridge::onConnected);
+    connect(socket_, &QWebSocket::disconnected, this, &NodeBridge::onDisconnected);
+    connect(socket_, &QWebSocket::textMessageReceived, this, &NodeBridge::onTextMessageReceived);
 }
 
-NodeBridge::~NodeBridge() {
-    ws->close();
-    delete ws;
-}
-
-void NodeBridge::connectToServer(const QUrl &url) {
-    ws->open(url);
-}
-
-void NodeBridge::sendCustomMessage(const QJsonObject &payload) {
-    if(ws->isValid()) {
-        ws->sendTextMessage(QJsonDocument(payload).toJson(QJsonDocument::Compact));
+NodeBridge::~NodeBridge()
+{
+    if (socket_) {
+        socket_->disconnect(this);
+        socket_->close();
+        socket_ = nullptr;
     }
+}   
+
+void NodeBridge::setMainWindow(MainWindow* window)
+{
+    mainWindow = window;
 }
 
-void NodeBridge::sendAAStatus(bool connected) {
+void NodeBridge::connectToServer(const QUrl &url)
 {
-    if(!ws) {
-        qDebug() << "[NodeBridge] WebSocket not initialized!";
+    if (!socket_)
         return;
-    }
 
-    if(ws->isValid()) {
-        QJsonObject payload;
-        payload["type"] = "aa_status";
-        payload["connected"] = connected;
-        ws->sendTextMessage(QJsonDocument(payload).toJson(QJsonDocument::Compact));
-        qDebug() << "[NodeBridge] Sent AA status:" << connected;
-    } else {
-        qDebug() << "[NodeBridge] WebSocket not valid yet. Cannot send AA status";
-    }
-}
+    socket_->open(url);
 }
 
-void NodeBridge::sendMetadata(const QJsonObject &metadata) {
+void NodeBridge::sendCustomMessage(const QJsonObject &payload)
+{
+    sendCustomMessage(
+        QJsonDocument(payload).toJson(QJsonDocument::Compact));
+}
+
+void NodeBridge::sendCustomMessage(const QString &jsonString)
+{
+    QPointer<QWebSocket> socketPtr(socket_);
+
+    QMetaObject::invokeMethod(
+        this,
+        [socketPtr, jsonString]() {
+            if (!socketPtr)
+                return;
+
+            if (socketPtr->state() != QAbstractSocket::ConnectedState)
+                return;
+
+            socketPtr->sendTextMessage(jsonString);
+        },
+        Qt::QueuedConnection
+    );
+}
+
+void NodeBridge::sendMetadata(const QJsonObject &metadata)
+{
     QJsonObject payload = metadata;
     payload["type"] = "metadata";
     sendCustomMessage(payload);
 }
 
-void NodeBridge::sendPlaybackStatus(const QString &status) {
+void NodeBridge::sendPlaybackStatus(const QString &status)
+{
     QJsonObject payload;
     payload["type"] = "playback";
     payload["playbackStatus"] = status;
     sendCustomMessage(payload);
 }
 
-// Slots
-void NodeBridge::onConnected() {
-    qDebug() << "[NodeBridge] Connected to Node.js server";
-    emit connected();
+void NodeBridge::onConnected()
+{
+    DASH_LOG(info) << "[NodeBridge] Connected to Node.js server";
 }
 
-void NodeBridge::onDisconnected() {
-    qDebug() << "[NodeBridge] Node.js WebSocket disconnected";
-    emit disconnected();
+void NodeBridge::onDisconnected()
+{
+    DASH_LOG(info) << "[NodeBridge] Node.js WebSocket disconnected";
 }
 
-void NodeBridge::onTextMessageReceived(const QString &message) {
-    qDebug() << "[NodeBridge] Message from Node.js:" << message;
+void NodeBridge::onTextMessageReceived(const QString &message)
+{
+    DASH_LOG(debug) << "[NodeBridge] Raw message:" << message.toStdString();
+
+    const QJsonDocument doc =
+        QJsonDocument::fromJson(message.toUtf8());
+
+    if (!doc.isObject()) {
+        DASH_LOG(debug) <<< "[Node Bridge] Invalid JSON Message"
+        return;
+    }
+
+    const QJsonObject obj = doc.object();
+    const QString type = obj.value("type").toString();
+
+    if (type == "blackout") {
+        const bool enabled = obj.value("enabled").toBool(false);
+        if (mainWindow)
+            mainWindow->setBlackout(enabled);
+    } else if (type == "darkMode") {
+        const bool enabled = obj.value("enabled").toBool(false);
+        emit darkMode(enabled);
+    }
 }

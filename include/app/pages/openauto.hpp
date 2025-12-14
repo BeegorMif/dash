@@ -29,6 +29,7 @@
 #include "DashLog.hpp"
 
 class Arbiter;
+class NodeBridge;
 
 class OpenAutoWorker : public QObject {
     Q_OBJECT
@@ -78,7 +79,7 @@ class OpenAutoPage : public QStackedWidget, public Page {
     Q_OBJECT
 
    public:
-    OpenAutoPage(Arbiter &arbiter, QWidget *parent = nullptr, WebInterface* webInterface = nullptr);
+    OpenAutoPage(Arbiter &arbiter, QWidget *parent = nullptr, WebInterface* webInterface = nullptr, NodeBridge* nodeBridge = nullptr);
     void init() override;
     void setNodeBridge(NodeBridge *bridge);
     QVariantMap buildMetadataMap(
@@ -132,7 +133,7 @@ class OpenAutoPage : public QStackedWidget, public Page {
         QString playbackStateToString(int state);
         QWebSocket *wsNode = nullptr;
         void sendHandshake();
-        NodeBridge *nodeBridge = nullptr;
+        NodeBridge* nodeBridge_ = nullptr;
         WebInterface* webInterface;
 
 };

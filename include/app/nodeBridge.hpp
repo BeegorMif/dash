@@ -1,31 +1,33 @@
 #pragma once
 
 #include <QObject>
-#include <QWebSocket>
+#include <QPointer>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QtWebSockets/QWebSocket>
+
+class MainWindow;
 
 class NodeBridge : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit NodeBridge(QObject *parent = nullptr);
-    ~NodeBridge();
+    explicit NodeBridge(QObject *parent = nullptr,
+                        MainWindow* window = nullptr);
+    ~NodeBridge() override;
 
-    // Connect to Node server
+    void setMainWindow(MainWindow* window);
     void connectToServer(const QUrl &url);
 
-    // Send AA status, playback metadata, or arbitrary payload
-    void sendAAStatus(bool connected);
+    Q_INVOKABLE void sendCustomMessage(const QJsonObject &payload);
+    Q_INVOKABLE void sendCustomMessage(const QString &jsonString);
+
     void sendMetadata(const QJsonObject &metadata);
     void sendPlaybackStatus(const QString &status);
-    void sendCustomMessage(const QJsonObject &payload);
-
+    
 signals:
-    void connected();
-    void disconnected();
-    void errorOccurred(const QString &error);
+    void darkMode(bool enabled);
 
 private slots:
     void onConnected();
@@ -33,5 +35,6 @@ private slots:
     void onTextMessageReceived(const QString &message);
 
 private:
-    QWebSocket *ws;
+    MainWindow* mainWindow = nullptr;
+    QPointer<QWebSocket> socket_;
 };

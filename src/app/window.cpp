@@ -3,6 +3,7 @@
 #include "app/pages/openauto.hpp"
 #include "app/usb_monitor.hpp"
 #include "app/arbiter.hpp"
+#include "app/nodeBridge.hpp"
 #include <QWebEngineView>
 #include <QWebChannel>
 #include <QStackedLayout>
@@ -17,9 +18,6 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     , arbiter(this)
 {
     this->setAttribute(Qt::WA_TranslucentBackground, true);
-
-    nodeBridge = new NodeBridge(this);
-    nodeBridge->connectToServer(QUrl("ws://localhost:3001"));
 
     auto container = new QWidget(this);
     stack = new QStackedLayout(container);
@@ -51,16 +49,28 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     webInterface = new WebInterface(this);
     channel->registerObject("qtBridge", webInterface);
     webView->page()->setWebChannel(channel);
-    
-    openAutoFrame = new OpenAutoPage(arbiter, debugContainer, webInterface);
-    openAutoFrame->setNodeBridge(nodeBridge);
+
+    nodeBridge_ = new NodeBridge(this, this);
+    nodeBridge_->connectToServer(QUrl("ws://localhost:3001"));
+    nodeBridge_->setMainWindow(this);
+
+    openAutoFrame = new OpenAutoPage(arbiter, debugContainer, webInterface, nodeBridge_);
+    openAutoFrame->setNodeBridge(nodeBridge_);
     openAutoFrame->init();
     openAutoFrame->setParent(debugContainer);
     openAutoFrame->setVisible(false);
     openAutoFrame->raise();
     this->setCentralWidget(container);
 
+    blackoutOverlay = new QWidget(this);
+    blackoutOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+    blackoutOverlay->setAttribute(Qt::WA_AcceptTouchEvents);
 
+    blackoutOverlay->setStyleSheet("background: rgba(0, 0, 0, 0%);");
+    blackoutOverlay->hide();
+
+    blackoutOverlay->installEventFilter(this);
+    
     connect(webInterface, &WebInterface::tabChangedSignal,
         this, &MainWindow::onTabChanged);
 
@@ -94,6 +104,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
             openAutoFrame->setGeometry(0, 0, debugContainer->width(), debugContainer->height());
         }
     }
+    if (blackoutOverlay)
+        blackoutOverlay->setGeometry(rect());
 }
 
 void MainWindow::loadWebUi()
@@ -109,6 +121,36 @@ void MainWindow::loadWebUi()
         // fallback to prod port
         webView->load(QUrl("http://127.0.0.1:3000"));
     }
+}
+
+void MainWindow::setBlackout(bool enable)
+{
+    blackoutMode = enable;
+
+    if (blackoutMode) {
+        blackoutOverlay->setGeometry(this->rect());
+        blackoutOverlay->raise();
+        blackoutOverlay->show();
+    } else {
+        blackoutOverlay->hide();
+    }
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == blackoutOverlay && blackoutMode) {
+
+        if (event->type() == QEvent::MouseButtonPress ||
+            event->type() == QEvent::TouchBegin)
+        {
+            if (nodeBridge_) 
+                nodeBridge_->sendCustomMessage(R"({"type":"blackout","enabled":false})");
+            this->setBlackout(false);
+            return true; // block event so it doesn't hit UI underneath
+        }
+    }
+
+    return QMainWindow::eventFilter(obj, event);
 }
 
 void MainWindow::onTabChanged(const QString &tabName)

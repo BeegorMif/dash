@@ -425,11 +425,12 @@ QLayout *OpenAutoPage::Settings::buttons_row_widget()
     return layout;
 }
 
-OpenAutoPage::OpenAutoPage(Arbiter &arbiter, QWidget *parent, WebInterface* webInterface)
+OpenAutoPage::OpenAutoPage(Arbiter &arbiter, QWidget *parent, WebInterface* webInterface, NodeBridge* nodeBridge)
     : QStackedWidget(parent)
     , Page(arbiter, "Android Auto", "android_auto", true, this)
     , connected_icon_name("android_auto_color")
     , webInterface(webInterface)
+    , nodeBridge_(nodeBridge)
 {
 }
 
@@ -439,7 +440,8 @@ void OpenAutoPage::init()
 
     this->frame = new OpenAutoFrame(this);
 
-    connect(this->frame, &OpenAutoFrame::toggle, [this](bool enable){
+    connect(this->frame, &OpenAutoFrame::toggle, this,
+            [this](bool enable) {
         this->setCurrentIndex(enable ? 1 : 0);
 
         if (Config::get_instance()->get_show_aa_connected()) {
@@ -451,8 +453,10 @@ void OpenAutoPage::init()
             this->button()->setIcon(icon);
         }
 
-        if(nodeBridge) {
-            nodeBridge->sendAAStatus(enable);
+        if(nodeBridge_) {
+            nodeBridge_->sendCustomMessage(
+                QString(R"({"type":"aa_status","connected":%1})")
+                .arg(enable ? "true" : "false"));
         }
     });
 
@@ -461,7 +465,9 @@ void OpenAutoPage::init()
 
     AAHandler *aa_handler = this->arbiter.android_auto().handler;
     connect(&this->arbiter, &Arbiter::mode_changed, [this, aa_handler](Session::Theme::Mode mode){
-        aa_handler->setNightMode(mode == Session::Theme::Dark);
+    });
+    connect(nodeBridge_, &NodeBridge::darkMode, this, [this, aa_handler](bool enabled) {
+        aa_handler->setNightMode(enabled);
     });
     if (webInterface) {
         connect(webInterface, &WebInterface::darkModeChangedSignal, [aa_handler](bool darkModeActive){
@@ -470,12 +476,13 @@ void OpenAutoPage::init()
             }
         });
     }
+
     auto sendUpdate = [this](const QJsonObject &payload) {
-        QMetaObject::invokeMethod(wsNode, [payload, this]() {
-            if (wsNode->isValid()) {
-                wsNode->sendTextMessage(QJsonDocument(payload).toJson(QJsonDocument::Compact));
-            }
-        }, Qt::QueuedConnection);
+        if (!nodeBridge_)
+            return;
+
+        nodeBridge_->sendCustomMessage(
+            QJsonDocument(payload).toJson(QJsonDocument::Compact));
     };
 
 
@@ -535,7 +542,7 @@ void OpenAutoPage::resizeEvent(QResizeEvent *event)
 
 void OpenAutoPage::setNodeBridge(NodeBridge* bridge)
 {
-    this->nodeBridge = bridge;
+    this->nodeBridge_ = bridge;
 }
 QWidget *OpenAutoPage::connect_msg()
 {
