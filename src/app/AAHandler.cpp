@@ -12,23 +12,6 @@ AAHandler::~AAHandler()
 
 }
 
-void AAHandler::injectButtonPressHelper(aasdk::proto::enums::ButtonCode::Enum buttonCode, Action::ActionState actionState)
-{
-    switch(actionState)
-    {
-        case(Action::ActionState::Activated):
-            this->injectButtonPress(buttonCode, openauto::projection::ButtonEventType::PRESS);
-            break;
-        case(Action::ActionState::Deactivated):
-            this->injectButtonPress(buttonCode, openauto::projection::ButtonEventType::RELEASE);
-            break;
-        case(Action::ActionState::Triggered):
-        default:
-            this->injectButtonPress(buttonCode, openauto::projection::ButtonEventType::NONE);
-            break;   
-    }
-}
-
 void AAHandler::mediaPlaybackUpdate(const aasdk::proto::messages::MediaInfoChannelPlaybackData& playback)
 {
     emit aa_media_playback_update(playback);

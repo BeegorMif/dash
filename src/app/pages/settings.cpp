@@ -12,7 +12,6 @@
 #include "openauto/Configuration/BluetootAdapterType.hpp"
 #include "openauto/Configuration/HandednessOfTrafficType.hpp"
 
-#include "app/action.hpp"
 #include "app/config.hpp"
 #include "app/session.hpp"
 #include "app/window.hpp"
@@ -30,7 +29,6 @@ SettingsPage::SettingsPage(Arbiter &arbiter, QWidget *parent)
 void SettingsPage::init()
 {
     this->addTab(new BluetoothSettingsTab(this->arbiter, this), "Bluetooth");
-    this->addTab(new ActionsSettingsTab(this->arbiter), "Actions");
 }
 
 BluetoothSettingsTab::BluetoothSettingsTab(Arbiter &arbiter, QWidget *parent)
@@ -156,76 +154,3 @@ QWidget *BluetoothSettingsTab::devices_widget()
     return scroll_area;
 }
 
-ActionsSettingsTab::ActionsSettingsTab(Arbiter &arbiter)
-    : QWidget()
-    , arbiter(arbiter)
-{
-    auto layout = new QVBoxLayout(this);
-    layout->setContentsMargins(6, 0, 6, 0);
-
-    layout->addWidget(this->settings());
-}
-
-QWidget *ActionsSettingsTab::settings()
-{
-    auto widget = new QWidget();
-    auto layout = new QVBoxLayout(widget);
-
-    for (auto action : this->arbiter.core().actions())
-        layout->addWidget(this->action_row(action));
-
-    auto scroll_area = new QScrollArea();
-    Session::Forge::to_touch_scroller(scroll_area);
-    scroll_area->setWidgetResizable(true);
-    scroll_area->setWidget(widget);
-
-    return scroll_area;
-}
-
-QWidget *ActionsSettingsTab::action_row(Action *action)
-{
-    auto widget = new QWidget();
-    auto layout = new QHBoxLayout(widget);
-
-    auto label = new QLabel(action->name());
-
-    layout->addWidget(label, 1);
-    layout->addWidget(this->action_input(action), 1);
-
-    return widget;
-}
-
-QWidget *ActionsSettingsTab::action_input(Action *action)
-{
-    auto widget = new QWidget();
-    auto layout = new QHBoxLayout(widget);
-
-    auto dialog = new ActionDialog(this->arbiter);
-    dialog->set_title(action->name());
-
-    auto button = new QPushButton(action->key());
-    button->setFont(this->arbiter.forge().font(16, true));
-    connect(button, &QPushButton::clicked, [dialog]{ dialog->open(); });
-
-    auto symbol = new QPushButton();
-    Session::Forge::symbolize(symbol);
-    symbol->setFlat(true);
-    symbol->setCheckable(true);
-    symbol->setVisible(!action->key().isNull());
-    symbol->setChecked(action->key().startsWith("gpio"));
-    this->arbiter.forge().iconize("keyboard", "developer_board", symbol, 32);
-
-    auto save = new QPushButton("save");
-    connect(save, &QPushButton::clicked, [this, action, dialog, button, symbol]{
-        this->arbiter.set_action(action, dialog->key());
-        button->setText(action->key());
-        symbol->setVisible(!action->key().isNull());
-        symbol->setChecked(action->key().startsWith("gpio"));
-    });
-    dialog->set_button(save);
-
-    layout->addWidget(button, 1);
-    layout->addWidget(symbol, 0, Qt::AlignRight);
-
-    return widget;
-}

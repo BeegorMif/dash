@@ -6,7 +6,6 @@
 #include <QProcess>
 
 #include "app/window.hpp"
-#include "app/action.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -30,7 +29,6 @@ int main(int argc, char *argv[])
         
     dash.setOrganizationName("openDsh");
     dash.setApplicationName("dash");
-    dash.installEventFilter(ActionEventFilter::get_instance());
 
     QSize size = dash.primaryScreen()->size();
     QPoint pos = dash.primaryScreen()->geometry().topLeft();

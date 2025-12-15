@@ -34,18 +34,3 @@ class BluetoothSettingsTab : public QWidget {
     Config *config;
     QMap<BluezQt::DevicePtr, QPushButton *> devices;
 };
-
-class ActionsSettingsTab : public QWidget {
-    Q_OBJECT
-
-   public:
-    ActionsSettingsTab(Arbiter &arbiter);
-
-   private:
-    QWidget *settings();
-    QWidget *action_row(Action *action);
-    QWidget *action_input(Action *action);
-
-    Arbiter &arbiter;
-    Config *config;
-};

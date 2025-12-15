@@ -6,7 +6,6 @@
 #include <QSettings>
 #include <QString>
 
-#include "app/action.hpp"
 #include "app/session.hpp"
 #include "app/pages/page.hpp"
 #include "openauto/Service/InputService.hpp"
@@ -23,7 +22,6 @@ class Arbiter : public QObject {
     void set_curr_page(Page *page);
     void set_curr_page(int id);
     void set_page(Page *page, bool enabled);
-    void set_action(Action *action, QString key);
 
     QMainWindow *window();
     QSettings &settings() { return this->session_.settings_; }
@@ -43,5 +41,4 @@ class Arbiter : public QObject {
     void mode_changed(Session::Theme::Mode mode);
     void curr_page_changed(Page *page);
     void page_changed(Page *page, bool enabled);
-    void action_changed(Action *action, QString key);
 };

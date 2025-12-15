@@ -188,59 +188,8 @@ Session::Core::Core(QSettings &settings, Arbiter &arbiter)
     this->stylesheets_[Session::Theme::Light] = this->parse_stylesheet(":/stylesheets/light.qss");
     this->stylesheets_[Session::Theme::Dark] = this->parse_stylesheet(":/stylesheets/dark.qss");
     AAHandler *aa_handler = arbiter.android_auto().handler;
-    this->actions_ = {
-        new Action("Android Auto Left", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::LEFT, actionState); }, arbiter.window()),
-        new Action("Android Auto Enter", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::ENTER, actionState); }, arbiter.window()),
-        new Action("Android Auto Right", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::RIGHT, actionState); }, arbiter.window()),
-        new Action("Android Auto Up", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::UP, actionState); }, arbiter.window()),
-        new Action("Android Auto Down", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::DOWN, actionState); }, arbiter.window()),
-        new Action("Android Auto Back", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::BACK, actionState); }, arbiter.window()),
-        new Action("Android Auto Home", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::HOME, actionState); }, arbiter.window()),
-        new Action("Android Auto Phone", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::PHONE, actionState); }, arbiter.window()),
-        new Action("Android Auto Call End", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::CALL_END, actionState); }, arbiter.window()),
-        new Action("Android Auto Play", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::PLAY, actionState); }, arbiter.window()),
-        new Action("Android Auto Pause", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::PAUSE, actionState); }, arbiter.window()),
-        new Action("Android Auto Prev Track", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::PREV, actionState); }, arbiter.window()),
-        new Action("Android Auto Next Track", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::NEXT, actionState); }, arbiter.window()),
-        new Action("Android Auto Toggle Play", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::TOGGLE_PLAY, actionState); }, arbiter.window()),
-        new Action("Android Auto Voice", [&arbiter, aa_handler](Action::ActionState actionState){ aa_handler->injectButtonPressHelper(aasdk::proto::enums::ButtonCode::MICROPHONE_1, actionState); }, arbiter.window()),
-        new Action("Android Auto Scroll Up", [&arbiter, aa_handler](Action::ActionState actionState){ if(actionState == Action::ActionState::Activated || actionState == Action::ActionState::Triggered) aa_handler->injectButtonPress(aasdk::proto::enums::ButtonCode::SCROLL_WHEEL, openauto::projection::WheelDirection::RIGHT); }, arbiter.window()),
-        new Action("Android Auto Scroll Down", [&arbiter, aa_handler](Action::ActionState actionState){ if(actionState == Action::ActionState::Activated || actionState == Action::ActionState::Triggered) aa_handler->injectButtonPress(aasdk::proto::enums::ButtonCode::SCROLL_WHEEL, openauto::projection::WheelDirection::LEFT); }, arbiter.window()),
-
-        new Action("Toggle Dark Mode", [&arbiter](Action::ActionState actionState){ if(actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) arbiter.toggle_mode(); }, arbiter.window()),
-    };
-
-    for (auto page : arbiter.layout().pages()) {
-        auto callback = [&arbiter, page](Action::ActionState actionState){
-            if (actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) {
-                QMetaObject::invokeMethod(&arbiter, [&arbiter, page]{
-                    arbiter.set_curr_page(page);
-                }, Qt::QueuedConnection);
-            }
-        };
-        this->actions_.append(new Action(QString("Show %1 Page").arg(page->name()), callback, arbiter.window()));
-    }
-
-    {
-        auto callback = [&arbiter](Action::ActionState actionState){
-            if (actionState == Action::ActionState::Triggered || actionState == Action::ActionState::Activated) {
-                QMetaObject::invokeMethod(&arbiter, [&arbiter]{
-                    arbiter.set_curr_page(arbiter.layout().next_enabled_page(arbiter.layout().curr_page));
-                }, Qt::QueuedConnection);
-            }
-        };
-        this->actions_.append(new Action("Cycle Page", callback, arbiter.window()));
-    }
-
 
     settings.beginGroup("Core");
-    settings.beginGroup("Action");
-    for (auto i = 0; i < this->actions_.size(); i++) {
-        auto key = settings.value(QString::number(i), QString()).toString();
-        if (!key.isNull())
-            this->action(i)->set(key);
-    }
-    settings.endGroup();
     settings.endGroup();
 
     QFontDatabase::addApplicationFont(":/fonts/Titillium_Web/TitilliumWeb-Regular.ttf");

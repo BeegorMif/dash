@@ -59,25 +59,6 @@ void Arbiter::set_page(Page *page, bool enabled)
     emit page_changed(page, enabled);
 }
 
-void Arbiter::set_action(Action *action, QString key)
-{
-    auto id = QString::number(this->core().action_id(action));
-    if (id < 0)
-        return;
-
-    action->set(key);
-    this->settings().beginGroup("Core");
-    this->settings().beginGroup("Action");
-    if (key.isNull())
-        this->settings().remove(id);
-    else
-        this->settings().setValue(id, key);
-    this->settings().endGroup();
-    this->settings().endGroup();
-
-    emit action_changed(action, key);
-}
-
 QMainWindow *Arbiter::window()
 {
     return this->window_;

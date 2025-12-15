@@ -17,7 +17,6 @@
 #include <QPalette>
 #include <QWidget>
 
-#include "app/action.hpp"
 #include "app/pages/openauto.hpp"
 #include "app/pages/page.hpp"
 #include "app/services/bluetooth.hpp"
@@ -111,14 +110,10 @@ class Session {
         QString stylesheet(Theme::Mode mode, float scale) const;
         void set_cursor() const;
 
-        const QList<Action *> &actions() const { return this->actions_; }
-        Action *action(int id) const { return this->actions_.value(id, nullptr); }
-        int action_id(Action *action) const { return this->actions_.indexOf(action); }
         QString stylesheet(Theme::Mode mode) const { return this->stylesheets_[mode]; }
 
        private:
         std::array<QString, Theme::NUM_MODES> stylesheets_;
-        QList<Action *> actions_;
 
         QString parse_stylesheet(QString path) const;
     };
