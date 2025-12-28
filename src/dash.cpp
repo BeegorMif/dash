@@ -4,6 +4,7 @@
 #include <QStringList>
 #include <QWindow>
 #include <QProcess>
+#include <QCursor>
 
 #include "app/window.hpp"
 
