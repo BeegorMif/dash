@@ -17,7 +17,6 @@ class Arbiter : public QObject {
 
    public:
     Arbiter(MainWindow *window);
-    void toggle_mode();
     void set_curr_page(Page *page);
     void set_curr_page(int id);
     void set_page(Page *page, bool enabled);
