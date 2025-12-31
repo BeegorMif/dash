@@ -18,19 +18,3 @@ class SettingsPage : public QTabWidget, public Page {
 
     void init() override;
 };
-
-class BluetoothSettingsTab : public QWidget {
-    Q_OBJECT
-
-   public:
-    BluetoothSettingsTab(Arbiter &arbiter, QWidget *parent = nullptr);
-
-   private:
-    QWidget *controls_widget();
-    QWidget *scanner_widget();
-    QWidget *devices_widget();
-
-    Arbiter &arbiter;
-    Config *config;
-    QMap<BluezQt::DevicePtr, QPushButton *> devices;
-};

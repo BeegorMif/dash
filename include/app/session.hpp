@@ -18,7 +18,6 @@
 
 #include "app/pages/openauto.hpp"
 #include "app/pages/page.hpp"
-#include "app/services/bluetooth.hpp"
 #include "AAHandler.hpp"
 
 class Arbiter;
@@ -48,8 +47,6 @@ class Session {
         static const char *SCREENBLANK_CMD;
         static const char *SCREENBLANK_OFF_CMD;
         static const char *REBOOT_CMD;
-
-        Bluetooth bluetooth;
 
         System(QSettings &settings, Arbiter &arbiter);
     };

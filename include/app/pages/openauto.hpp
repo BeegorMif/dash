@@ -10,7 +10,6 @@
 #include "aasdk/USB/ConnectedAccessoriesEnumerator.hpp"
 #include "aasdk/USB/USBHub.hpp"
 #include "app/config.hpp"
-#include "app/widgets/switch.hpp"
 #include "app/widgets/dialog.hpp"
 #include "openauto/App.hpp"
 #include "openauto/Configuration/Configuration.hpp"
@@ -92,32 +91,32 @@ class OpenAutoPage : public QStackedWidget, public Page {
     void aaStatusChanged(bool connected);
 
    private:
-    class Settings : public QWidget {
-       public:
-        Settings(Arbiter &arbiter, QWidget *parent = nullptr);
+    // class Settings : public QWidget {
+    //    public:
+    //     Settings(Arbiter &arbiter, QWidget *parent = nullptr);
 
-       protected:
-        QSize sizeHint() const override;
+    //    protected:
+    //     QSize sizeHint() const override;
 
-       private:
-        QLayout *settings_widget();
-        QLayout *rhd_row_widget();
-        QLayout *frame_rate_row_widget();
-        QLayout *resolution_row_widget();
-        QLayout *dpi_row_widget();
-        QLayout *dpi_widget();
-        QLayout *rt_audio_row_widget();
-        QLayout *audio_channels_row_widget();
-        QLayout *bluetooth_row_widget();
-        QLayout *autoconnect_row_widget();
-        QLayout *touchscreen_row_widget();
-        QLayout *connected_indicator_widget();
-        QCheckBox *button_checkbox(QString name, QString key, aasdk::proto::enums::ButtonCode::Enum code);
-        QLayout *buttons_row_widget();
+    //    private:
+    //     QLayout *settings_widget();
+    //     QLayout *rhd_row_widget();
+    //     QLayout *frame_rate_row_widget();
+    //     QLayout *resolution_row_widget();
+    //     QLayout *dpi_row_widget();
+    //     QLayout *dpi_widget();
+    //     QLayout *rt_audio_row_widget();
+    //     QLayout *audio_channels_row_widget();
+    //     QLayout *bluetooth_row_widget();
+    //     QLayout *autoconnect_row_widget();
+    //     QLayout *touchscreen_row_widget();
+    //     QLayout *connected_indicator_widget();
+    //     QCheckBox *button_checkbox(QString name, QString key, aasdk::proto::enums::ButtonCode::Enum code);
+    //     QLayout *buttons_row_widget();
 
-        Arbiter &arbiter;
-        Config *config;
-    };
+    //     Arbiter &arbiter;
+    //     Config *config;
+    // };
 
     Config *config;
     OpenAutoFrame *frame;

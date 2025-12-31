@@ -69,7 +69,6 @@ const char *Session::System::REBOOT_CMD = "sudo shutdown -r now";
 
 
 Session::System::System(QSettings &settings, Arbiter &arbiter)
-    : bluetooth(arbiter)
 {
 }
 
