@@ -8,7 +8,6 @@
 #include "app/arbiter.hpp"
 
 class OpenAutoPage;
-class ShutdownPage;
 class Arbiter;
 class NodeBridge;
 
@@ -42,9 +41,6 @@ private:
 
     QWidget *debugContainer = nullptr;
     OpenAutoPage *openAutoFrame = nullptr;
-
-    ShutdownPage *shutdownPage = nullptr;
-    QTimer *shutdownDelayTimer = nullptr;
 
     QStackedLayout *stack = nullptr;
     NodeBridge* nodeBridge_ = nullptr;

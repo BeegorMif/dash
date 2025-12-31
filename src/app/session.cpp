@@ -13,7 +13,6 @@
 
 #include "app/arbiter.hpp"
 #include "app/pages/settings.hpp"
-#include "app/pages/blackout.hpp"
 #include "app/pages/webview.hpp"
 #include "aasdk_proto/ButtonCodeEnum.pb.h"
 
@@ -28,7 +27,6 @@ Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
     this->pages_ = {
         this->openauto_page,
         new SettingsPage(arbiter),
-        new BlackoutPage(arbiter),
         new WebviewPage(arbiter)
     };
 
@@ -61,11 +59,6 @@ Page *Session::Layout::next_enabled_page(Page *page) const
 
     return this->page(id);
 }
-
-const char *Session::System::SCREENBLANK_CMD = "sudo ddcutil setvcp D6 04";
-const char *Session::System::SCREENBLANK_OFF_CMD = "sudo ddcutil setvcp D6 01";
-const char *Session::System::SHUTDOWN_CMD = "sudo shutdown -h --no-wall now";
-const char *Session::System::REBOOT_CMD = "sudo shutdown -r now";
 
 
 Session::System::System(QSettings &settings, Arbiter &arbiter)
