@@ -34,12 +34,6 @@ void Arbiter::set_page(Page *page, bool enabled)
         return;
 
     page->enable(enabled);
-    this->settings().beginGroup("Layout");
-    this->settings().beginGroup("Page");
-    this->settings().setValue(QString::number(id), page->enabled());
-    this->settings().endGroup();
-    this->settings().endGroup();
-
     emit page_changed(page, enabled);
 }
 

@@ -12,7 +12,6 @@
 #include <QTextStream>
 
 #include "app/arbiter.hpp"
-#include "app/pages/settings.hpp"
 #include "app/pages/webview.hpp"
 #include "aasdk_proto/ButtonCodeEnum.pb.h"
 
@@ -26,21 +25,8 @@ Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
 {
     this->pages_ = {
         this->openauto_page,
-        new SettingsPage(arbiter),
         new WebviewPage(arbiter)
     };
-
-    settings.beginGroup("Layout");
-    settings.beginGroup("Page");
-    for (int i = 0; i < this->pages_.size(); i++) {
-        auto page = this->page(i);
-        if (page->toggleale()) {
-            if (!settings.value(QString::number(i), true).toBool())
-                page->enable(false);
-        }
-    }
-    settings.endGroup();
-    settings.endGroup();
 
     for (auto page : this->pages_) {
         if (page->enabled()) {
@@ -118,9 +104,6 @@ Session::AndroidAuto::AndroidAuto(Arbiter &arbiter)
 Session::Core::Core(QSettings &settings, Arbiter &arbiter)
 {
     AAHandler *aa_handler = arbiter.android_auto().handler;
-
-    settings.beginGroup("Core");
-    settings.endGroup();
 
     QFontDatabase::addApplicationFont(":/fonts/Titillium_Web/TitilliumWeb-Regular.ttf");
     QFontDatabase::addApplicationFont(":/fonts/Montserrat/Montserrat-LightItalic.ttf");
