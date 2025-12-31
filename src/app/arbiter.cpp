@@ -10,22 +10,6 @@ Arbiter::Arbiter(MainWindow *window)
 {
 }
 
-void Arbiter::set_mode(Session::Theme::Mode mode)
-{
-    this->theme().mode = mode;
-    this->settings().setValue("Theme/mode", mode);
-
-    this->session_.update();
-
-    emit mode_changed(mode);
-}
-
-void Arbiter::toggle_mode()
-{
-    auto mode = (this->theme().mode == Session::Theme::Light) ? Session::Theme::Dark : Session::Theme::Light;
-    this->set_mode(mode);
-}
-
 void Arbiter::set_curr_page(Page *page)
 {
     if (this->layout().page_id(page) < 0 || !page->enabled())

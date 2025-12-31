@@ -459,11 +459,10 @@ void OpenAutoPage::init()
     });
 
     std::function<void(bool)> callback = [frame = this->frame](bool active){ frame->toggle(active); };
-    this->worker = new OpenAutoWorker(callback, this->arbiter.theme().mode == Session::Theme::Dark, frame, this->arbiter);
+    this->worker = new OpenAutoWorker(callback, true, frame, this->arbiter);
 
     AAHandler *aa_handler = this->arbiter.android_auto().handler;
-    connect(&this->arbiter, &Arbiter::mode_changed, [this, aa_handler](Session::Theme::Mode mode){
-    });
+
     connect(nodeBridge_, &NodeBridge::darkMode, this, [this, aa_handler](bool enabled) {
         aa_handler->setNightMode(enabled);
     });

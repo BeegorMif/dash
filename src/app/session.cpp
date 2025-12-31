@@ -21,43 +21,6 @@
 #include "app/session.hpp"
 
 
-Session::Theme::Mode Session::Theme::from_str(QString mode)
-{
-    // defaults to light mode if unknown
-    return (mode == "Dark") ? Session::Theme::Dark : Session::Theme::Light;
-}
-
-QString Session::Theme::to_str(Session::Theme::Mode mode)
-{
-    switch (mode) {
-        case Session::Theme::Light:
-            return "Light";
-            break;
-        case Session::Theme::Dark:
-            return "Dark";
-            break;
-        default:
-            return QString();
-    }
-}
-
-Session::Theme::Theme(QSettings &settings)
-    : mode(static_cast<Theme::Mode>(settings.value("Theme/mode", Session::Theme::Light).toUInt()))
-{
-    this->colors_[Session::Theme::Light] = QColor(settings.value("Theme/Color/light", "#000000").toString());
-    this->colors_[Session::Theme::Dark] = QColor(settings.value("Theme/Color/dark", "#ffffff").toString());
-}
-
-QPalette Session::Theme::palette() const
-{
-    QPalette palette;
-    auto color = this->color();
-    palette.setColor(QPalette::Base, color);
-    color.setAlphaF(.5);
-    palette.setColor(QPalette::AlternateBase, color);
-
-    return palette;
-}
 
 Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
     : scale(settings.value("Layout/scale", 1.0).toDouble())
@@ -185,8 +148,6 @@ Session::AndroidAuto::AndroidAuto(Arbiter &arbiter)
 
 Session::Core::Core(QSettings &settings, Arbiter &arbiter)
 {
-    this->stylesheets_[Session::Theme::Light] = this->parse_stylesheet(":/stylesheets/light.qss");
-    this->stylesheets_[Session::Theme::Dark] = this->parse_stylesheet(":/stylesheets/dark.qss");
     AAHandler *aa_handler = arbiter.android_auto().handler;
 
     settings.beginGroup("Core");
@@ -201,47 +162,12 @@ Session::Core::Core(QSettings &settings, Arbiter &arbiter)
 
 }
 
-QString Session::Core::stylesheet(Theme::Mode mode, float scale) const
-{
-    QRegularExpression regex(" (-?\\d+)px");
-
-    auto stylesheet = this->stylesheet(mode);
-    auto it = regex.globalMatch(stylesheet);
-    while (it.hasNext()) {
-        auto match = it.next();
-        if (match.hasMatch()) {
-            int scaled_px = std::ceil(match.captured(1).toInt() * scale);
-            stylesheet.replace(match.captured(), QString("%1px").arg(scaled_px));
-        }
-    }
-
-    return stylesheet;
-}
-
-QString Session::Core::parse_stylesheet(QString path) const
-{
-    QFile file(path);
-    file.open(QFile::ReadOnly | QFile::Text);
-    QTextStream stream(&file);
-
-    return stream.readAll();
-}
-
 Session::Session(Arbiter &arbiter)
     : settings_()
-    , theme_(settings_)
     , layout_(settings_, arbiter)
     , system_(settings_, arbiter)
     , forge_(arbiter)
     , core_(settings_, arbiter)
     , android_auto_(arbiter)
 {
-}
-
-void Session::update()
-{
-    if (qApp) {
-        qApp->setPalette(this->theme_.palette());
-        qApp->setStyleSheet(this->core_.stylesheet(this->theme_.mode, this->layout_.scale));
-    }
 }

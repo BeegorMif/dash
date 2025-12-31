@@ -16,26 +16,7 @@ IconEngine::IconEngine(Arbiter &arbiter, QString icon, bool colorize)
 
 void IconEngine::init_painter(QPainter *painter, QIcon::Mode mode, QIcon::State state) const
 {
-    if (mode == QIcon::Disabled) {
-        painter->setBrush(this->arbiter.theme().base_color());
-        painter->setOpacity(((this->arbiter.theme().mode == Session::Theme::Light) ? 97 : 128) / 255.0);
-    }
-    else {
-        if (state == QIcon::On) {
-            if (this->colorize)
-                painter->setBrush(this->arbiter.theme().color());
-            else
-                painter->setBrush(this->arbiter.theme().base_color());
-            painter->setOpacity(((this->arbiter.theme().mode == Session::Theme::Light) ? 255 : 222) / 255.0);
-        }
-        else {
-            painter->setBrush(this->arbiter.theme().base_color());
-            if (this->colorize)
-                painter->setOpacity(((this->arbiter.theme().mode == Session::Theme::Light) ? 162 : 134) / 255.0);
-            else
-                painter->setOpacity(((this->arbiter.theme().mode == Session::Theme::Light) ? 255 : 222) / 255.0);
-        }
-    }
+
 }
 
 void IconEngine::addFile(const QString &file, const QSize &size, QIcon::Mode mode, QIcon::State state)

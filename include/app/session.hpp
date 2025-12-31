@@ -28,31 +28,6 @@ class Arbiter;
 class Session {
    public:
 
-    struct Theme {
-        enum Mode {
-            Light = 0,
-            Dark,
-            NUM_MODES
-        };
-
-        static Mode from_str(QString mode);
-        static QString to_str(Mode mode);
-
-        Mode mode;
-
-        Theme(QSettings &settings);
-        QPalette palette() const;
-
-        QColor &color(Mode mode) { return this->colors_[mode]; }
-        QColor color(Mode mode) const { return this->colors_[mode]; }
-        QColor &color() { return this->colors_[this->mode]; }
-        QColor color() const { return this->colors_[this->mode]; }
-        QColor base_color() const { return (this->mode == Light) ? QColor(0, 0, 0) : QColor(255, 255, 255); }
-
-       private:
-        std::array<QColor, NUM_MODES> colors_;
-    };
-
     struct Layout {
 
         double scale;
@@ -107,15 +82,8 @@ class Session {
         bool cursor;
 
         Core(QSettings &settings, Arbiter &arbiter);
-        QString stylesheet(Theme::Mode mode, float scale) const;
         void set_cursor() const;
 
-        QString stylesheet(Theme::Mode mode) const { return this->stylesheets_[mode]; }
-
-       private:
-        std::array<QString, Theme::NUM_MODES> stylesheets_;
-
-        QString parse_stylesheet(QString path) const;
     };
 
     Session(Arbiter &arbiter);
@@ -125,7 +93,6 @@ class Session {
 
    private:
     QSettings settings_;
-    Theme theme_;
     Layout layout_;
     System system_;
     Forge forge_;

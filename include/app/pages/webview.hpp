@@ -21,11 +21,6 @@ public:
     WebviewPage(Arbiter &arbiter, QWidget *parent = nullptr);
     void init() override;
 
-public slots:
-    void setDarkModeFromWeb(bool enabled) {
-        qDebug() << "[WebviewBridge] setDarkModeFromWeb called:" << enabled;
-        arbiter_.set_mode(enabled ? Session::Theme::Dark : Session::Theme::Light);
-    }
 private:
     QWidget* loadWebview();
     void showEvent(QShowEvent *event) override;

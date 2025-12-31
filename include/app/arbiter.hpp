@@ -17,7 +17,6 @@ class Arbiter : public QObject {
 
    public:
     Arbiter(MainWindow *window);
-    void set_mode(Session::Theme::Mode mode);
     void toggle_mode();
     void set_curr_page(Page *page);
     void set_curr_page(int id);
@@ -25,7 +24,6 @@ class Arbiter : public QObject {
 
     QMainWindow *window();
     QSettings &settings() { return this->session_.settings_; }
-    Session::Theme &theme() { return this->session_.theme_; }
     Session::Layout &layout() { return this->session_.layout_; }
     Session::System &system() { return this->session_.system_; }
     Session::Forge &forge() { return this->session_.forge_; }
@@ -38,7 +36,6 @@ class Arbiter : public QObject {
     Session session_;
 
    signals:
-    void mode_changed(Session::Theme::Mode mode);
     void curr_page_changed(Page *page);
     void page_changed(Page *page, bool enabled);
 };
