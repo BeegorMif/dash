@@ -57,7 +57,6 @@ QLayout *Selector::selector()
 
     QPushButton *left_button = new QPushButton();
     left_button->setFlat(true);
-    this->arbiter.forge().iconize("arrow_left", left_button, 32);
     connect(left_button, &QPushButton::clicked, [this]() {
         int count = this->options.size();
         this->current_idx = ((this->current_idx - 1) % count + count) % count;
@@ -68,7 +67,6 @@ QLayout *Selector::selector()
 
     QPushButton *right_button = new QPushButton();
     right_button->setFlat(true);
-    this->arbiter.forge().iconize("arrow_right", right_button, 32);
     connect(right_button, &QPushButton::clicked, [this]() {
         this->current_idx = (this->current_idx + 1) % this->options.size();
         this->update_label();

@@ -42,10 +42,9 @@ QLayout *Page::Settings::row(QString label, QWidget *control)
     return layout;
 }
 
-Page::Page(Arbiter &arbiter, QString name, QString icon_name, bool toggleable, QWidget *widget)
+Page::Page(Arbiter &arbiter, QString name, bool toggleable, QWidget *widget)
     : arbiter(arbiter)
     , name_(name)
-    , icon_name_(icon_name)
     , toggleable_(toggleable)
     , container_(new PageContainer(widget))
     , button_(new QPushButton())
@@ -63,7 +62,6 @@ QPushButton *Page::settings_button()
 {
     auto settings_button = new QPushButton();
     settings_button->setFlat(true);
-    this->arbiter.forge().iconize("settings", settings_button, 24);
 
     auto dialog = this->dialog();
     QObject::connect(settings_button, &QPushButton::clicked, [dialog]{ dialog->open(); });

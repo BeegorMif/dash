@@ -22,7 +22,7 @@
 
 SettingsPage::SettingsPage(Arbiter &arbiter, QWidget *parent)
     : QTabWidget(parent)
-    , Page(arbiter, "Settings", "tune", false, this)
+    , Page(arbiter, "Settings", false, this)
 {
 }
 
@@ -75,7 +75,6 @@ QWidget *BluetoothSettingsTab::scanner_widget()
     button->setFlat(true);
     button->setCheckable(true);
     button->setEnabled(false);
-    this->arbiter.forge().iconize("bluetooth_searching", button, 36);
     connect(button, &QPushButton::clicked, [this](bool checked){
         if (checked)
             this->arbiter.system().bluetooth.start_scan();

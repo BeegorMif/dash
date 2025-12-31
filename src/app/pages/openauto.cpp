@@ -426,8 +426,7 @@ QLayout *OpenAutoPage::Settings::buttons_row_widget()
 
 OpenAutoPage::OpenAutoPage(Arbiter &arbiter, QWidget *parent, NodeBridge* nodeBridge)
     : QStackedWidget(parent)
-    , Page(arbiter, "Android Auto", "android_auto", true, this)
-    , connected_icon_name("android_auto_color")
+    , Page(arbiter, "Android Auto", true, this)
     , nodeBridge_(nodeBridge)
 {
 }
@@ -441,15 +440,6 @@ void OpenAutoPage::init()
     connect(this->frame, &OpenAutoFrame::toggle, this,
             [this](bool enable) {
         this->setCurrentIndex(enable ? 1 : 0);
-
-        if (Config::get_instance()->get_show_aa_connected()) {
-            auto icon = this->button()->icon();
-            if (enable)
-                icon.addFile(QString(":/icons/%1.svg").arg(this->connected_icon_name), QSize(), QIcon::Active, QIcon::On);
-            else
-                icon.addFile(QString(":/icons/%1.svg").arg(this->icon_name()), QSize(), QIcon::Active, QIcon::Off);
-            this->button()->setIcon(icon);
-        }
 
         if(nodeBridge_) {
             nodeBridge_->sendCustomMessage(
@@ -557,8 +547,8 @@ QWidget *OpenAutoPage::connect_msg()
     dialog->set_button(save_button);
 
     QPushButton *settings_button = new QPushButton(widget);
-    settings_button->setFlat(true);
-    this->arbiter.forge().iconize("settings", settings_button, 24);
+    settings_button->setFlat(false);
+    settings_button->setText("Settings");
     connect(settings_button, &QPushButton::clicked, [dialog]() { dialog->open(); });
 
     layout2->addStretch();

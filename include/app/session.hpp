@@ -9,7 +9,6 @@
 #include <QFileInfo>
 #include <QFont>
 #include <QFrame>
-#include <QIcon>
 #include <QList>
 #include <QMap>
 #include <QSettings>
@@ -63,9 +62,6 @@ class Session {
         static void symbolize(QAbstractButton *button);
 
         Forge(Arbiter &arbiter);
-        void iconize(QString name, QAbstractButton *button, uint8_t size) const;
-        void iconize(QString name, QString alt_name, QAbstractButton *button, uint8_t size) const;
-        void iconize(QIcon &icon, QAbstractButton *button, uint8_t size) const;
         QFont font(int size, bool mono = false) const;
 
        private:

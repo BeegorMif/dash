@@ -42,7 +42,6 @@ int main(int argc, char *argv[])
     dash.processEvents();
 
     MainWindow window(QRect(pos, size));
-    window.setWindowIcon(QIcon(":/logo.png"));
     window.setWindowFlags(Qt::FramelessWindowHint);
     window.setWindowState(Qt::WindowFullScreen);
 

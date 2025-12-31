@@ -5,7 +5,7 @@
 
 BlackoutPage::BlackoutPage(Arbiter &arbiter, QWidget *parent)
     : QStackedWidget(parent)
-    , Page(arbiter, "Blackout", "screen_off", true, this)
+    , Page(arbiter, "Blackout", true, this)
 {
 }
 

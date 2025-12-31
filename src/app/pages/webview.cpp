@@ -37,7 +37,7 @@ protected:
 // ---------------------- WebviewPage ----------------------
 WebviewPage::WebviewPage(Arbiter &arbiter, QWidget *parent)
     : QStackedWidget(parent)
-    , Page(arbiter, "Webview", "widgets", true, this)
+    , Page(arbiter, "Webview", true, this)
     , view_(nullptr)
     , nodeOnline_(false)
     , pageLoaded_(false)

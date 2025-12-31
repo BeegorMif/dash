@@ -24,11 +24,10 @@ class PageContainer : public QFrame {
 
 class Page {
    public:
-    Page(Arbiter &arbiter, QString name, QString icon_name, bool toggleable, QWidget *widget);
+    Page(Arbiter &arbiter, QString name, bool toggleable, QWidget *widget);
     void enable(bool enable);
 
     const QString &name() { return this->name_; }
-    const QString &icon_name() { return this->icon_name_; }
     const bool &toggleale() { return this->toggleable_; }
     PageContainer *container() { return this->container_; }
     QPushButton *button() { return this->button_; }
@@ -57,7 +56,6 @@ class Page {
 
    private:
     const QString name_;
-    const QString icon_name_;
     const bool toggleable_;
     PageContainer *container_;
     QPushButton *button_;

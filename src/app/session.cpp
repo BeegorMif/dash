@@ -15,11 +15,9 @@
 #include "app/pages/settings.hpp"
 #include "app/pages/blackout.hpp"
 #include "app/pages/webview.hpp"
-#include "app/utilities/icon_engine.hpp"
 #include "aasdk_proto/ButtonCodeEnum.pb.h"
 
 #include "app/session.hpp"
-
 
 
 Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
@@ -110,26 +108,6 @@ void Session::Forge::symbolize(QAbstractButton *button)
 Session::Forge::Forge(Arbiter &arbiter)
     : arbiter_(arbiter)
 {
-}
-
-void Session::Forge::iconize(QString name, QAbstractButton *button, uint8_t size) const
-{
-    this->iconize(name, QString(), button, size);
-}
-
-void Session::Forge::iconize(QString name, QString alt_name, QAbstractButton *button, uint8_t size) const
-{
-    QIcon icon(new IconEngine(this->arbiter_, QString(":/icons/%1.svg").arg(name), false));
-    if (!alt_name.isNull())
-        icon.addFile(QString(":/icons/%1.svg").arg(alt_name), QSize(), QIcon::Normal, QIcon::On);
-    this->iconize(icon, button, size);
-}
-
-void Session::Forge::iconize(QIcon &icon, QAbstractButton *button, uint8_t size) const
-{
-    auto scaled = size * this->arbiter_.layout().scale;
-    button->setIconSize(QSize(scaled, scaled));
-    button->setIcon(icon);
 }
 
 QFont Session::Forge::font(int size, bool mono) const

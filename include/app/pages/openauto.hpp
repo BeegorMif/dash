@@ -121,7 +121,6 @@ class OpenAutoPage : public QStackedWidget, public Page {
     Config *config;
     OpenAutoFrame *frame;
     OpenAutoWorker *worker;
-    const QString connected_icon_name;
 
     private:
         QString currentPlaybackStatus = "Stopped";  // Track current playback state
