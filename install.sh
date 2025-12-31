@@ -160,7 +160,6 @@ dependencies=(
     "libqt5serialbus5-plugins"
     "libqt5serialport5-dev"
     "libqt5websockets5-dev"
-    "libqt5svg5-dev"
     "libqt5multimedia5"
     "libqt5multimedia5-plugins"
     "libqt5multimediawidgets5"
