@@ -7,7 +7,6 @@
 #include <QColor>
 #include <QDir>
 #include <QFileInfo>
-#include <QFont>
 #include <QFrame>
 #include <QList>
 #include <QMap>
@@ -52,7 +51,6 @@ class Session {
         static void symbolize(QAbstractButton *button);
 
         Forge(Arbiter &arbiter);
-        QFont font(int size, bool mono = false) const;
 
        private:
         Arbiter &arbiter_;

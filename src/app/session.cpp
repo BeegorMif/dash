@@ -2,7 +2,6 @@
 
 #include <QCoreApplication>
 #include <QFile>
-#include <QFontDatabase>
 #include <QHBoxLayout>
 #include <QProcess>
 #include <QPushButton>
@@ -87,14 +86,6 @@ Session::Forge::Forge(Arbiter &arbiter)
 {
 }
 
-QFont Session::Forge::font(int size, bool mono) const
-{
-    auto name = mono ? "Titillium Web" : "Montserrat";
-    auto scaled = size * this->arbiter_.layout().scale;
-
-    return QFont(name, scaled);
-}
-
 Session::AndroidAuto::AndroidAuto(Arbiter &arbiter)
     : handler(new AAHandler())
 {
@@ -104,13 +95,6 @@ Session::AndroidAuto::AndroidAuto(Arbiter &arbiter)
 Session::Core::Core(QSettings &settings, Arbiter &arbiter)
 {
     AAHandler *aa_handler = arbiter.android_auto().handler;
-
-    QFontDatabase::addApplicationFont(":/fonts/Titillium_Web/TitilliumWeb-Regular.ttf");
-    QFontDatabase::addApplicationFont(":/fonts/Montserrat/Montserrat-LightItalic.ttf");
-    QFontDatabase::addApplicationFont(":/fonts/Montserrat/Montserrat-Regular.ttf");
-
-    if (qApp)
-        qApp->setFont(arbiter.forge().font(14));
 
 }
 

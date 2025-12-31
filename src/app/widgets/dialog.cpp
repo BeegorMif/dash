@@ -40,9 +40,6 @@ void Dialog::open(int timeout)
 void Dialog::set_title(QString str)
 {
     QLabel *label = new QLabel(str, this);
-    QFont font(this->arbiter.forge().font(16));
-    font.setBold(true);
-    label->setFont(font);
     this->title->addWidget(label);
 }
 
