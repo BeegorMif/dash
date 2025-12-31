@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
             "--disable-software-rasterizer "
             "--ignore-gpu-blocklist "
             "--use-gl=egl");
+    qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
 
     qputenv("QT_QUICK_CONTROLS_STYLE", "Material");
     QApplication dash(argc, argv);
