@@ -23,7 +23,9 @@ public:
     NodeBridge* nodeBridge() const { return nodeBridge_; }
     bool blackoutMode = false;
     QWidget* blackoutOverlay = nullptr;
-    void onTabChanged(const QString &tabName);
+    void onTabChanged(const QString &tabName, bool aaConnected);
+    void onAAStatusChanged(bool connected);
+    void updateAAFrameVisibility();
     void setBlackout(bool enable);
     bool eventFilter(QObject* obj, QEvent* event) override;
 
@@ -53,4 +55,5 @@ private:
 
 public:
     QString currentTab = "android_auto";
+    bool aaConnected = false;
 };

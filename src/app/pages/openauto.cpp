@@ -440,6 +440,8 @@ void OpenAutoPage::init()
     connect(this->frame, &OpenAutoFrame::toggle, this,
             [this](bool enable) {
         this->setCurrentIndex(enable ? 1 : 0);
+    
+        emit aaStatusChanged(enable); // <-- new signal
 
         if(nodeBridge_) {
             nodeBridge_->sendCustomMessage(
@@ -499,7 +501,6 @@ void OpenAutoPage::init()
         sendUpdate(payload);
     });
 
-    this->addWidget(this->connect_msg());
     this->addWidget(this->frame);
 }
 
@@ -523,43 +524,6 @@ void OpenAutoPage::resizeEvent(QResizeEvent *event)
 void OpenAutoPage::setNodeBridge(NodeBridge* bridge)
 {
     this->nodeBridge_ = bridge;
-}
-QWidget *OpenAutoPage::connect_msg()
-{
-    QWidget *widget = new QWidget(this);
-    QVBoxLayout *layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(0, 0, 0, 0);
-
-    QLabel *label = new QLabel("Connect Device to Start Android Auto", widget);
-    label->setAlignment(Qt::AlignCenter);
-
-    QHBoxLayout *layout2 = new QHBoxLayout();
-    layout2->setContentsMargins(0, 0, 0, 0);
-    layout2->setSpacing(0);
-
-    Dialog *dialog = new Dialog(this->arbiter, this->window());
-    dialog->set_body(new OpenAutoPage::Settings(this->arbiter, this));
-    QPushButton *save_button = new QPushButton("save");
-    connect(save_button, &QPushButton::clicked, [this]() {
-        this->config->openauto_config->setButtonCodes(this->config->openauto_button_codes);
-        this->config->openauto_config->save();
-    });
-    dialog->set_button(save_button);
-
-    QPushButton *settings_button = new QPushButton(widget);
-    settings_button->setFlat(false);
-    settings_button->setText("Settings");
-    connect(settings_button, &QPushButton::clicked, [dialog]() { dialog->open(); });
-
-    layout2->addStretch();
-    layout2->addWidget(settings_button);
-
-    layout->addLayout(layout2);
-    layout->addStretch();
-    layout->addWidget(label);
-    layout->addStretch();
-
-    return widget;
 }
 
 QVariantMap OpenAutoPage::buildMetadataMap(

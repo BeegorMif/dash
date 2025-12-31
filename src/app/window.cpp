@@ -67,7 +67,12 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     loadWebUi();
 
     QTimer::singleShot(0, this, [this]() {
-        this->onTabChanged("android_auto");
+        this->onTabChanged("android_auto", false);
+    });
+    connect(openAutoFrame, &OpenAutoPage::aaStatusChanged,
+        this, [this](bool connected){
+    DASH_LOG(debug) << "[MainWindow] AA Status changed: " << connected;
+        this->onAAStatusChanged(connected);
     });
 }
 
@@ -80,7 +85,6 @@ MainWindow* MainWindow::init(QRect geometry)
 void MainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
-    qDebug() << "[Dash] MainWindow shown";
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -143,12 +147,25 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
     return QMainWindow::eventFilter(obj, event);
 }
 
-void MainWindow::onTabChanged(const QString &tabName)
+void MainWindow::onTabChanged(const QString &tabName, bool aaConnectedFlag)
 {
     currentTab = tabName;
-    DASH_LOG(debug) << "Tab Change To:" << tabName.toStdString();
+    aaConnected = aaConnectedFlag; // store the latest AA status
+    DASH_LOG(debug) << "Tab Change To:" << tabName.toStdString()
+                    << " AA Connected:" << aaConnected;
 
-    if(tabName == "android_auto") {
+    updateAAFrameVisibility();
+}
+void MainWindow::onAAStatusChanged(bool connected)
+{
+    aaConnected = connected;
+    updateAAFrameVisibility();
+}
+void MainWindow::updateAAFrameVisibility()
+{
+    const bool showAAFrame = (currentTab == "android_auto") && aaConnected;
+
+    if(showAAFrame) {
         openAutoFrame->setVisible(true);
         openAutoFrame->setParent(debugContainer);
         openAutoFrame->raise();

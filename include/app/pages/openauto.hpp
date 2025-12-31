@@ -88,6 +88,9 @@ class OpenAutoPage : public QStackedWidget, public Page {
    protected:
     void resizeEvent(QResizeEvent *event);
 
+   signals:
+    void aaStatusChanged(bool connected);
+
    private:
     class Settings : public QWidget {
        public:
@@ -115,8 +118,6 @@ class OpenAutoPage : public QStackedWidget, public Page {
         Arbiter &arbiter;
         Config *config;
     };
-
-    QWidget *connect_msg();
 
     Config *config;
     OpenAutoFrame *frame;
