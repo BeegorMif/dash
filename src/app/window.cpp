@@ -1,6 +1,5 @@
 #include "app/window.hpp"
 #include "app/pages/openauto.hpp"
-#include "app/usb_monitor.hpp"
 #include "app/arbiter.hpp"
 #include "app/nodeBridge.hpp"
 #include <QWebEngineView>
