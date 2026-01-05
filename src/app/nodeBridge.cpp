@@ -80,6 +80,11 @@ void NodeBridge::sendPlaybackStatus(const QString &status)
 void NodeBridge::onConnected()
 {
     DASH_LOG(info) << "[NodeBridge] Connected to Node.js server";
+        QJsonObject hello;
+    hello["type"] = "hello";
+    hello["role"] = "dash_cpp";
+
+    sendCustomMessage(hello);
 }
 
 void NodeBridge::onDisconnected()
