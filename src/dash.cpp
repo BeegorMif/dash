@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     window.setWindowState(Qt::WindowFullScreen);
 
     window.show();
-    QProcess::execute("plymouth quit --wait");
+    QProcess::execute("plymouth", {"quit", "--wait"});
 
     return dash.exec();
 }

@@ -94,8 +94,6 @@ Session::AndroidAuto::AndroidAuto(Arbiter &arbiter)
 
 Session::Core::Core(QSettings &settings, Arbiter &arbiter)
 {
-    AAHandler *aa_handler = arbiter.android_auto().handler;
-
 }
 
 Session::Session(Arbiter &arbiter)
@@ -103,7 +101,7 @@ Session::Session(Arbiter &arbiter)
     , layout_(settings_, arbiter)
     , system_(settings_, arbiter)
     , forge_(arbiter)
-    , core_(settings_, arbiter)
     , android_auto_(arbiter)
+    , core_(settings_, arbiter)
 {
 }
