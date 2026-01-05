@@ -105,7 +105,8 @@ void NodeBridge::onTextMessageReceived(const QString &message)
     }
 
     const QJsonObject obj = doc.object();
-    const QString type = obj.value("type").toString();
+    const QJsonObject msg = obj.value("msg").toObject();
+    const QString type = msg.value("type").toString();
 
     if (type == "blackout") {
         const bool enabled = obj.value("enabled").toBool(false);
