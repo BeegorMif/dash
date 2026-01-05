@@ -106,6 +106,11 @@ void NodeBridge::onTextMessageReceived(const QString &message)
         const bool enabled = obj.value("enabled").toBool(false);
         if (mainWindow)
             mainWindow->setBlackout(enabled);
+    } else if (type == "vehicle.lights") {
+        const bool headlightsOn = obj.value("headlights").toBool(false);
+        DASH_LOG(info) << "[NodeBridge] Headlights are"
+                       << (headlightsOn ? "ON" : "OFF");
+                       emit darkMode(headlightsOn);
     } else if (type == "darkMode") {
         const bool enabled = obj.value("enabled").toBool(false);
         emit darkMode(enabled);
