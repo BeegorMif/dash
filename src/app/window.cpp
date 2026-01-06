@@ -128,7 +128,6 @@ void MainWindow::setBlackout(bool enable)
     blackoutMode = enable;
 
     if (blackoutMode) {
-        QWidget* topFrame = (openAutoFrame && openAutoFrame->isVisible()) ? openAutoFrame : debugContainer;
         enableBlackoutTouchHandler(blackoutOverlay);
         blackoutOverlay->setGeometry(this->rect());
         blackoutOverlay->raise();
