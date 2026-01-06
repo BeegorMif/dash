@@ -23,11 +23,14 @@ public:
     MainWindow* init(QRect geometry);
     NodeBridge* nodeBridge() const { return nodeBridge_; }
     bool blackoutMode = false;
+    bool extraDimMode = false;
     QWidget* blackoutOverlay = nullptr;
+    QWidget* extraDimOverlay = nullptr;
     void onTabChanged(const QString &tabName, bool aaConnected);
     void onAAStatusChanged(bool connected);
     void updateAAFrameVisibility();
     void setBlackout(bool enable);
+    void setExtraDim(bool enable);
 
 protected:
     void showEvent(QShowEvent *event) override;

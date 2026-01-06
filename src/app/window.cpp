@@ -63,6 +63,13 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     blackoutOverlay->setStyleSheet("background: rgba(0, 0, 0, 150);");
     blackoutOverlay->hide();
 
+    extraDimOverlay = new QWidget(this);
+    extraDimOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    extraDimOverlay->setAttribute(Qt::WA_AcceptTouchEvents);
+
+    extraDimOverlay->setStyleSheet("background: rgba(0, 0, 0, 150);");
+    extraDimOverlay->hide();
+
     loadWebUi();
 
     QTimer::singleShot(0, this, [this]() {
@@ -128,6 +135,19 @@ void MainWindow::setBlackout(bool enable)
         blackoutOverlay->show();
     } else {
         blackoutOverlay->hide();
+    }
+}
+
+void MainWindow::setExtraDim(bool enable)
+{
+    extraDimMode = enable;
+
+    if (extraDimMode) {
+        extraDimOverlay->setGeometry(this->rect());
+        extraDimOverlay->raise();
+        extraDimOverlay->show();
+    } else {
+        extraDimOverlay->hide();
     }
 }
 
