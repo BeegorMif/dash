@@ -6,6 +6,9 @@
 #include <QTimer>
 #include "AAHandler.hpp"
 #include "app/arbiter.hpp"
+#include <QEvent>
+#include <QWidget>
+#include <QMetaObject>
 
 class OpenAutoPage;
 class Arbiter;
@@ -25,7 +28,6 @@ public:
     void onAAStatusChanged(bool connected);
     void updateAAFrameVisibility();
     void setBlackout(bool enable);
-    bool eventFilter(QObject* obj, QEvent* event) override;
 
 protected:
     void showEvent(QShowEvent *event) override;
@@ -36,7 +38,6 @@ private slots:
 private:
     void loadWebUi();
 
-private:
     QWebEngineView *webView = nullptr;
 
     QWidget *debugContainer = nullptr;
@@ -46,8 +47,20 @@ private:
     NodeBridge* nodeBridge_ = nullptr;
 
     Arbiter arbiter;
-
+    
 public:
     QString currentTab = "android_auto";
     bool aaConnected = false;
+
+    class BlackoutEventFilter : public QObject {
+    public:
+        BlackoutEventFilter(QObject* parent, MainWindow* window)
+            : QObject(parent), mainWindow(window) {}
+    protected:
+        bool eventFilter(QObject* obj, QEvent* event) override;
+    private:
+        MainWindow* mainWindow = nullptr;
+    };
+
+    void enableBlackoutTouchHandler(QWidget* targetFrame);
 };

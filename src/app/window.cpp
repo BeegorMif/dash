@@ -9,6 +9,8 @@
 #include <QTcpSocket>
 #include <QUrl>
 #include <QResizeEvent>
+#include <QMouseEvent>
+#include <QTouchEvent>
 
 MainWindow::MainWindow(QRect geometry, QWidget *parent)
     : QMainWindow(parent)
