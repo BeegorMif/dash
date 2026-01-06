@@ -109,16 +109,16 @@ void NodeBridge::onTextMessageReceived(const QString &message)
     const QString type = msg.value("type").toString();
 
     if (type == "blackout") {
-        const bool enabled = obj.value("enabled").toBool(false);
+        const bool enabled = msg.value("enabled").toBool(false);
         if (mainWindow)
             mainWindow->setBlackout(enabled);
     } else if (type == "vehicle.lights") {
-        const bool headlightsOn = obj.value("headlights").toBool(false);
+        const bool headlightsOn = msg.value("headlights").toBool(false);
         DASH_LOG(info) << "[NodeBridge] Headlights are"
                        << (headlightsOn ? "ON" : "OFF");
                        emit darkMode(headlightsOn);
     } else if (type == "darkMode") {
-        const bool enabled = obj.value("enabled").toBool(false);
+        const bool enabled = msg.value("enabled").toBool(false);
         emit darkMode(enabled);
     } else if (type =="tabChange") {
         mainWindow->onTabChanged(obj.value("tab").toString(), obj.value("aaConnected").toBool());
