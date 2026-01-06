@@ -58,11 +58,9 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     blackoutOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, false);
     blackoutOverlay->setAttribute(Qt::WA_AcceptTouchEvents);
 
-    blackoutOverlay->setStyleSheet("background: rgba(0, 0, 0, 0%);");
+    blackoutOverlay->setStyleSheet("background: rgba(0, 0, 0, 150);");
     blackoutOverlay->hide();
 
-    blackoutOverlay->installEventFilter(this);
-    
     loadWebUi();
 
     QTimer::singleShot(0, this, [this]() {
@@ -121,6 +119,8 @@ void MainWindow::setBlackout(bool enable)
     blackoutMode = enable;
 
     if (blackoutMode) {
+        QWidget* topFrame = (openAutoFrame && openAutoFrame->isVisible()) ? openAutoFrame : debugContainer;
+        enableBlackoutTouchHandler(blackoutOverlay);
         blackoutOverlay->setGeometry(this->rect());
         blackoutOverlay->raise();
         blackoutOverlay->show();
@@ -129,21 +129,32 @@ void MainWindow::setBlackout(bool enable)
     }
 }
 
-bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+void MainWindow::enableBlackoutTouchHandler(QWidget* targetFrame)
 {
-    if (obj == blackoutOverlay && blackoutMode) {
+    if (!targetFrame) return;
 
-        if (event->type() == QEvent::MouseButtonPress ||
-            event->type() == QEvent::TouchBegin)
-        {
-            if (nodeBridge_) 
-                nodeBridge_->sendCustomMessage(R"({"type":"blackout","enabled":false})");
-            this->setBlackout(false);
-            return true; // block event so it doesn't hit UI underneath
-        }
+    auto filter = new BlackoutEventFilter(targetFrame, this);
+    targetFrame->installEventFilter(filter);
+}
+
+bool MainWindow::BlackoutEventFilter::eventFilter(QObject* obj, QEvent* event)
+{
+    if (!mainWindow) return QObject::eventFilter(obj, event);
+
+    if (event->type() == QEvent::MouseButtonPress ||
+        event->type() == QEvent::TouchBegin)
+    {
+        if (mainWindow->nodeBridge())
+            mainWindow->nodeBridge()->sendCustomMessage(R"({"type":"blackout","enabled":false})");
+
+        mainWindow->setBlackout(false);
+        obj->removeEventFilter(this);
+        delete this;
+
+        return true;
     }
 
-    return QMainWindow::eventFilter(obj, event);
+    return QObject::eventFilter(obj, event);
 }
 
 void MainWindow::onTabChanged(const QString &tabName, bool aaConnectedFlag)
