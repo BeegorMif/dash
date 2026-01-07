@@ -127,6 +127,6 @@ void NodeBridge::onTextMessageReceived(const QString &message)
         const bool enabled = msg.value("enabled").toBool(false);
         emit darkMode(enabled);
     } else if (type =="tabChange") {
-        mainWindow->onTabChanged(obj.value("tab").toString(), msg.value("aaConnected").toBool());
+        mainWindow->onTabChanged(msg.value("tab").toString(), msg.value("aaConnected").toBool());
     }
 }
