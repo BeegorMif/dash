@@ -31,6 +31,7 @@ public:
     void updateAAFrameVisibility();
     void setBlackout(bool enable);
     void setExtraDim(bool enable);
+    void applyDebugBorder(QWidget* widget, const QString &color, bool dashed=false);
 
 protected:
     void showEvent(QShowEvent *event) override;

@@ -29,6 +29,11 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
+option(DEBUG_BORDERS "Enable debug borders in UI" OFF)
+
+if(DEBUG_BORDERS)
+    add_definitions(-DDEBUG_BORDERS)
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules/")
 find_package(Boost REQUIRED COMPONENTS system log OPTIONAL_COMPONENTS unit_test_framework)

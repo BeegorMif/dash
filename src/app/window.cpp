@@ -91,6 +91,12 @@ MainWindow* MainWindow::init(QRect geometry)
 void MainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
+    qDebug() << "[DEBUG_BORDERS] Applying borders in showEvent";
+        applyDebugBorder(webView, "red");
+        applyDebugBorder(debugContainer, "blue");
+        applyDebugBorder(openAutoFrame, "green");
+        // applyDebugBorder(blackoutOverlay, "yellow", true);
+        applyDebugBorder(extraDimOverlay, "cyan", true);
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -208,3 +214,15 @@ void MainWindow::updateAAFrameVisibility()
         debugContainer->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     }
 }
+#ifdef DEBUG_BORDERS
+    void MainWindow::applyDebugBorder(QWidget* widget, const QString &color, bool dashed) {
+        if(!widget) return;
+        QString style = dashed ? QString("border: 2px dashed %1;").arg(color)
+                            : QString("border: 2px solid %1;").arg(color);
+        widget->setStyleSheet(widget->styleSheet() + style);
+        qDebug() << "[DEBUG_BORDERS] Applied border to:" << widget->objectName();
+        if (openAutoFrame) openAutoFrame->setVisible(true);
+    // if (blackoutOverlay) blackoutOverlay->setVisible(true);
+    if (extraDimOverlay) extraDimOverlay->setVisible(true);
+    }
+#endif

@@ -622,7 +622,11 @@ else
 
 	echo -e Installing dash'\n'
   echo Running CMake for dash
-  cmake ${installArgs} -DGST_BUILD=TRUE -DCMAKE_CXX_FLAGS="-flto -march=native" ../
+  if [[ $BUILD_TYPE == "Debug" ]]; then
+    cmake ${installArgs} -DGST_BUILD=TRUE -DDEBUG_BORDERS=ON -DCMAKE_CXX_FLAGS="-flto -march=native" ../
+  else
+    cmake ${installArgs} -DGST_BUILD=TRUE -DCMAKE_CXX_FLAGS="-flto -march=native" ../
+  fi
   if [[ $? -eq 0 ]]; then
     echo -e Dash CMake OK'\n'
   else
