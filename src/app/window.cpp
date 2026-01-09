@@ -223,6 +223,6 @@ void MainWindow::updateAAFrameVisibility()
         qDebug() << "[DEBUG_BORDERS] Applied border to:" << widget->objectName();
         if (openAutoFrame) openAutoFrame->setVisible(true);
     // if (blackoutOverlay) blackoutOverlay->setVisible(true);
-    if (extraDimOverlay) extraDimOverlay->setVisible(true);
+    // if (extraDimOverlay) extraDimOverlay->setVisible(true);
     }
 #endif
