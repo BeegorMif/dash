@@ -1,18 +1,30 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QWebEngineView>
-#include <QStackedLayout>
-#include <QTimer>
-#include "AAHandler.hpp"
-#include "app/arbiter.hpp"
+#include <QString>
 #include <QEvent>
-#include <QWidget>
-#include <QMetaObject>
+#include <QResizeEvent>
+
+#include "app/arbiter.hpp"
+
+class QWebEngineView;
+class QStackedLayout;
+class QWidget;
+class QResizeEvent;
 
 class OpenAutoPage;
-class Arbiter;
 class NodeBridge;
+
+class ClickFilter : public QObject {
+    Q_OBJECT
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override {
+        if (event->type() == QEvent::MouseButtonPress) {
+            qDebug() << "Clicked on" << obj->objectName();
+        }
+        return QObject::eventFilter(obj, event);
+    }
+};
 
 class MainWindow : public QMainWindow
 {
@@ -21,47 +33,54 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QRect geometry, QWidget *parent = nullptr);
     MainWindow* init(QRect geometry);
+
     NodeBridge* nodeBridge() const { return nodeBridge_; }
-    bool blackoutMode = false;
-    bool extraDimMode = false;
-    QWidget* blackoutOverlay = nullptr;
-    QWidget* extraDimOverlay = nullptr;
+
+    /* ---------- Android Auto ---------- */
     void onTabChanged(const QString &tabName, bool aaConnected);
     void onAAStatusChanged(bool connected);
     void updateAAFrameVisibility();
+
+    /* ---------- Overlays ---------- */
+    void setDim(bool enable);
     void setBlackout(bool enable);
-    void setExtraDim(bool enable);
-    void applyDebugBorder(QWidget* widget, const QString &color, bool dashed=false);
 
 protected:
-    void showEvent(QShowEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
-private slots:
-
 private:
+    /* ---------- Helpers ---------- */
     void loadWebUi();
+    void syncOverlayZOrder();
 
-    QWebEngineView *webView = nullptr;
+    /* ---------- Core widgets ---------- */
+    QWebEngineView* webView = nullptr;
+    OpenAutoPage* openAutoFrame = nullptr;
 
-    QWidget *debugContainer = nullptr;
-    OpenAutoPage *openAutoFrame = nullptr;
+    /* ---------- Overlays ---------- */
+    QWidget* dimOverlay = nullptr;
+    QWidget* blackoutOverlay = nullptr;
 
-    QStackedLayout *stack = nullptr;
+    /* ---------- Layout ---------- */
+    QStackedLayout* stack = nullptr;
+
+    /* ---------- Backend ---------- */
     NodeBridge* nodeBridge_ = nullptr;
-
     Arbiter arbiter;
-    
-public:
+
+    /* ---------- State ---------- */
     QString currentTab = "android_auto";
     bool aaConnected = false;
 
+    /* ---------- Blackout input handler ---------- */
     class BlackoutEventFilter : public QObject {
     public:
         BlackoutEventFilter(QObject* parent, MainWindow* window)
             : QObject(parent), mainWindow(window) {}
+
     protected:
         bool eventFilter(QObject* obj, QEvent* event) override;
+
     private:
         MainWindow* mainWindow = nullptr;
     };

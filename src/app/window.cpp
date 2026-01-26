@@ -2,6 +2,7 @@
 #include "app/pages/openauto.hpp"
 #include "app/arbiter.hpp"
 #include "app/nodeBridge.hpp"
+
 #include <QWebEngineView>
 #include <QStackedLayout>
 #include <QTimer>
@@ -9,220 +10,180 @@
 #include <QTcpSocket>
 #include <QUrl>
 #include <QResizeEvent>
-#include <QMouseEvent>
-#include <QTouchEvent>
+
+static constexpr int MENU_WIDTH = 70;
 
 MainWindow::MainWindow(QRect geometry, QWidget *parent)
     : QMainWindow(parent)
     , arbiter(this)
 {
-    this->setAttribute(Qt::WA_TranslucentBackground, true);
+    setAttribute(Qt::WA_TranslucentBackground, true);
 
-    auto container = new QWidget(this);
-    stack = new QStackedLayout(container);
+    /* ---------------- Central + stack ---------------- */
+
+    auto central = new QWidget(this);
+    central->setObjectName("CentralWidget");
+    setCentralWidget(central);
+
+
+    stack = new QStackedLayout(central);
     stack->setStackingMode(QStackedLayout::StackAll);
-    stack->setContentsMargins(0,0,70,0);
+    stack->setContentsMargins(0, 0, 300, 0);
     stack->setSpacing(0);
 
-    webView = new QWebEngineView(container);
+    /* ---------------- Web UI ---------------- */
+
+    webView = new QWebEngineView(central);
     webView->setObjectName("WebView");
-    webView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     stack->addWidget(webView);
 
-    int menuWidth = 70;
-    debugContainer = new QWidget(container);
-    debugContainer->setObjectName("OA_DebugContainer");
-    debugContainer->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-    debugContainer->setGeometry(0, 0, container->width(), container->height());
-
-    stack->addWidget(debugContainer);
-
-    QWidget *menuSpacer = new QWidget(debugContainer);
-    menuSpacer->setFixedWidth(menuWidth);
-    menuSpacer->setGeometry(debugContainer->width() - menuWidth, 0, menuWidth, debugContainer->height());
-    menuSpacer->setAttribute(Qt::WA_TransparentForMouseEvents);
-    menuSpacer->setStyleSheet("background: transparent;");
-    menuSpacer->raise();
+    /* ---------------- Android Auto frame ---------------- */
 
     nodeBridge_ = new NodeBridge(this, this);
     nodeBridge_->connectToServer(QUrl("ws://localhost:3001"));
     nodeBridge_->setMainWindow(this);
 
-    openAutoFrame = new OpenAutoPage(arbiter, debugContainer, nodeBridge_);
+    openAutoFrame = new OpenAutoPage(arbiter, central, nodeBridge_);
+    openAutoFrame->setObjectName("OpenAutoFrame");
     openAutoFrame->setNodeBridge(nodeBridge_);
     openAutoFrame->init();
-    openAutoFrame->setParent(debugContainer);
-    openAutoFrame->setVisible(false);
-    openAutoFrame->raise();
-    this->setCentralWidget(container);
+    openAutoFrame->hide();
+    stack->addWidget(openAutoFrame);
 
-    blackoutOverlay = new QWidget(this);
+    /* ---------------- Dim overlay (visual only) ---------------- */
+
+    dimOverlay = new QWidget(central);
+    dimOverlay->setObjectName("DimOverlay");
+    dimOverlay->setStyleSheet("background: rgba(0,0,0,150);");
+    dimOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    dimOverlay->setParent(central);
+    dimOverlay->hide();
+    stack->addWidget(dimOverlay);
+
+    /* ---------------- Blackout overlay (modal) ---------------- */
+
+    blackoutOverlay = new QWidget(central);
+    blackoutOverlay->setObjectName("BlackoutOverlay");
+    blackoutOverlay->setStyleSheet("background: rgba(0,0,0,180);");
     blackoutOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, false);
-    blackoutOverlay->setAttribute(Qt::WA_AcceptTouchEvents);
-
-    blackoutOverlay->setStyleSheet("background: rgba(0, 0, 0, 150);");
+    blackoutOverlay->setParent(central);
     blackoutOverlay->hide();
+    stack->addWidget(blackoutOverlay);
 
-    extraDimOverlay = new QWidget(this);
-    extraDimOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-    extraDimOverlay->setAttribute(Qt::WA_AcceptTouchEvents);
+    qApp->installEventFilter(new ClickFilter());
 
-    extraDimOverlay->setStyleSheet("background: rgba(0, 0, 0, 150);");
-    extraDimOverlay->hide();
 
     loadWebUi();
 
     QTimer::singleShot(0, this, [this]() {
-        this->onTabChanged("android_auto", false);
+        onTabChanged("android_auto", false);
     });
+
     connect(openAutoFrame, &OpenAutoPage::aaStatusChanged,
-        this, [this](bool connected){
-    DASH_LOG(debug) << "[MainWindow] AA Status changed: " << connected;
-        this->onAAStatusChanged(connected);
-    });
+            this, &MainWindow::onAAStatusChanged);
 }
 
-MainWindow* MainWindow::init(QRect geometry)
-{
-    this->setGeometry(geometry);
-    return this;
-}
-
-void MainWindow::showEvent(QShowEvent *event)
-{
-    QMainWindow::showEvent(event);
-    qDebug() << "[DEBUG_BORDERS] Applying borders in showEvent";
-        applyDebugBorder(webView, "red");
-        applyDebugBorder(debugContainer, "blue");
-        applyDebugBorder(openAutoFrame, "green");
-        // applyDebugBorder(blackoutOverlay, "yellow", true);
-        applyDebugBorder(extraDimOverlay, "cyan", true);
-}
+/* ========================================================= */
+/* ==================== Geometry ============================ */
+/* ========================================================= */
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
 
-    int menuWidth = 70;
-    if(debugContainer) {
-        debugContainer->setGeometry(0, 0, this->centralWidget()->width() - menuWidth, this->centralWidget()->height());
-        if(openAutoFrame) {
-            openAutoFrame->setGeometry(0, 0, debugContainer->width(), debugContainer->height());
-        }
-    }
-    if (blackoutOverlay)
-        blackoutOverlay->setGeometry(rect());
+    QRect full = centralWidget()->rect();
+
+    // webView->setGeometry(full);
+    dimOverlay->setGeometry(full);
+    blackoutOverlay->setGeometry(full);
+
+    // openAutoFrame->setGeometry(
+    //     0,
+    //     0,
+    //     full.width() - MENU_WIDTH,
+    //     full.height()
+    // );
 }
 
-void MainWindow::loadWebUi()
+/* ========================================================= */
+/* ==================== Z-Order ============================== */
+/* ========================================================= */
+
+void MainWindow::syncOverlayZOrder()
 {
-    if(!webView) return;
+    // Bottom → top (authoritative)
+    webView->raise();
 
-    QTcpSocket socket;
-    socket.connectToHost("127.0.0.1", 5173);
-    if(socket.waitForConnected(100)) {
-        socket.disconnectFromHost();
-        webView->load(QUrl("http://127.0.0.1:5173"));
-    } else {
-        // fallback to prod port
-        webView->load(QUrl("http://127.0.0.1:3000"));
-    }
-}
+    if (openAutoFrame->isVisible())
+        openAutoFrame->raise();
 
-void MainWindow::setBlackout(bool enable)
-{
-    blackoutMode = enable;
+    if (dimOverlay->isVisible())
+        dimOverlay->raise();
 
-    if (blackoutMode) {
-        enableBlackoutTouchHandler(blackoutOverlay);
-        blackoutOverlay->setGeometry(this->rect());
+    if (blackoutOverlay->isVisible())
         blackoutOverlay->raise();
-        blackoutOverlay->show();
-    } else {
-        blackoutOverlay->hide();
-    }
 }
 
-void MainWindow::setExtraDim(bool enable)
-{
-    extraDimMode = enable;
-
-    if (extraDimMode) {
-        extraDimOverlay->setGeometry(this->rect());
-        extraDimOverlay->raise();
-        extraDimOverlay->show();
-    } else {
-        extraDimOverlay->hide();
-    }
-}
-
-void MainWindow::enableBlackoutTouchHandler(QWidget* targetFrame)
-{
-    if (!targetFrame) return;
-
-    auto filter = new BlackoutEventFilter(targetFrame, this);
-    targetFrame->installEventFilter(filter);
-}
-
-bool MainWindow::BlackoutEventFilter::eventFilter(QObject* obj, QEvent* event)
-{
-    if (!mainWindow) return QObject::eventFilter(obj, event);
-
-    if (event->type() == QEvent::MouseButtonPress ||
-        event->type() == QEvent::TouchBegin)
-    {
-        if (mainWindow->nodeBridge())
-            mainWindow->nodeBridge()->sendCustomMessage(R"({"type":"blackout","enabled":false})");
-
-        mainWindow->setBlackout(false);
-        obj->removeEventFilter(this);
-        delete this;
-
-        return true;
-    }
-
-    return QObject::eventFilter(obj, event);
-}
+/* ========================================================= */
+/* ==================== AA Visibility ======================= */
+/* ========================================================= */
 
 void MainWindow::onTabChanged(const QString &tabName, bool aaConnectedFlag)
 {
     currentTab = tabName;
-    aaConnected = aaConnectedFlag; // store the latest AA status
-    DASH_LOG(debug) << "Tab Change To:" << tabName.toStdString()
-                    << " AA Connected:" << aaConnected;
-
+    aaConnected = aaConnectedFlag;
     updateAAFrameVisibility();
 }
+
 void MainWindow::onAAStatusChanged(bool connected)
 {
     aaConnected = connected;
     updateAAFrameVisibility();
 }
+
 void MainWindow::updateAAFrameVisibility()
 {
-    const bool showAAFrame = (currentTab == "android_auto") && aaConnected;
+    const bool showAA =
+        (currentTab == "android_auto") && aaConnected;
 
-    if(showAAFrame) {
-        openAutoFrame->setVisible(true);
-        openAutoFrame->setParent(debugContainer);
-        openAutoFrame->raise();
-        debugContainer->setVisible(true);
-        debugContainer->setAttribute(Qt::WA_TransparentForMouseEvents, false);
-        debugContainer->raise();
+    if (showAA) {
+        openAutoFrame->show();
     } else {
-        openAutoFrame->setVisible(false);
-        debugContainer->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        openAutoFrame->hide();
+    }
+
+    syncOverlayZOrder();
+}
+
+/* ========================================================= */
+/* ==================== Overlays ============================ */
+/* ========================================================= */
+
+void MainWindow::setDim(bool enable)
+{
+    dimOverlay->setVisible(enable);
+    syncOverlayZOrder();
+}
+
+void MainWindow::setBlackout(bool enable)
+{
+    blackoutOverlay->setVisible(enable);
+    syncOverlayZOrder();
+}
+
+/* ========================================================= */
+/* ==================== Web UI ============================== */
+/* ========================================================= */
+
+void MainWindow::loadWebUi()
+{
+    QTcpSocket socket;
+    socket.connectToHost("127.0.0.1", 5173);
+
+    if (socket.waitForConnected(100)) {
+        socket.disconnectFromHost();
+        webView->load(QUrl("http://127.0.0.1:5173"));
+    } else {
+        webView->load(QUrl("http://127.0.0.1:3000"));
     }
 }
-#ifdef DEBUG_BORDERS
-    void MainWindow::applyDebugBorder(QWidget* widget, const QString &color, bool dashed) {
-        if(!widget) return;
-        QString style = dashed ? QString("border: 2px dashed %1;").arg(color)
-                            : QString("border: 2px solid %1;").arg(color);
-        widget->setStyleSheet(widget->styleSheet() + style);
-        qDebug() << "[DEBUG_BORDERS] Applied border to:" << widget->objectName();
-        if (openAutoFrame) openAutoFrame->setVisible(true);
-    // if (blackoutOverlay) blackoutOverlay->setVisible(true);
-    // if (extraDimOverlay) extraDimOverlay->setVisible(true);
-    }
-#endif

@@ -2,6 +2,7 @@
 
 #include "app/config.hpp"
 #include "app/window.hpp"
+#include "app/arbiter.hpp"
 #include "DashLog.hpp"
 #include "MediaInfoChannelMetadataData.pb.h"
 #include <QVariantMap>

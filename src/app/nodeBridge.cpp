@@ -116,7 +116,7 @@ void NodeBridge::onTextMessageReceived(const QString &message)
         if (msg.value("action").toString() == "extra_dim") {
              const bool enabled = msg.value("value").toBool(false);
              if (mainWindow)
-                 mainWindow->setExtraDim(enabled);
+                 mainWindow->setDim(enabled);
         }
     } else if (type == "vehicle.lights") {
         const bool headlightsOn = msg.value("headlights").toBool(false);

@@ -5,7 +5,10 @@
 #include <QWindow>
 #include <QProcess>
 #include <QCursor>
+#include <QScreen>
+#include <QSettings>
 
+#include "DashLog.hpp"
 #include "app/window.hpp"
 
 int main(int argc, char *argv[])
