@@ -83,8 +83,7 @@ class BlackoutOverlayWidget : public QWidget {
 
     protected:
         void mousePressEvent(QMouseEvent* event) override {
-            qDebug() << "Blackout overlay clicked → disabling blackout";
-
+            mainWindow->setBlackout(false);
             if (mainWindow && mainWindow->nodeBridge()) {
                 QJsonObject msg{
                     { "type", "blackout" },
