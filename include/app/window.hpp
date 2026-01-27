@@ -73,17 +73,29 @@ private:
     bool aaConnected = false;
 
     /* ---------- Blackout input handler ---------- */
-    class BlackoutEventFilter : public QObject {
-    public:
-        BlackoutEventFilter(QObject* parent, MainWindow* window)
-            : QObject(parent), mainWindow(window) {}
-
-    protected:
-        bool eventFilter(QObject* obj, QEvent* event) override;
-
-    private:
-        MainWindow* mainWindow = nullptr;
-    };
-
     void enableBlackoutTouchHandler(QWidget* targetFrame);
 };
+class BlackoutOverlayWidget : public QWidget {
+        Q_OBJECT
+    public:
+        explicit BlackoutOverlayWidget(QWidget* parent, MainWindow* window)
+            : QWidget(parent), mainWindow(window) {}
+
+    protected:
+        void mousePressEvent(QMouseEvent* event) override {
+            qDebug() << "Blackout overlay clicked → disabling blackout";
+
+            if (mainWindow && mainWindow->nodeBridge()) {
+                QJsonObject msg{
+                    { "type", "blackout" },
+                    { "enabled", false }
+                };
+                mainWindow->nodeBridge()->sendCustomMessage(msg);
+            }
+
+            event->accept();
+        }
+
+    private:
+        MainWindow* mainWindow;
+    };

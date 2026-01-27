@@ -62,7 +62,7 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
 
     /* ---------------- Blackout overlay (modal) ---------------- */
 
-    blackoutOverlay = new QWidget(central);
+    blackoutOverlay = new BlackoutOverlayWidget(central, this);
     blackoutOverlay->setObjectName("BlackoutOverlay");
     blackoutOverlay->setStyleSheet("background: rgba(0,0,0,180);");
     blackoutOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, false);
