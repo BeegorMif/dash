@@ -94,7 +94,7 @@ void NodeBridge::onDisconnected()
 
 void NodeBridge::onTextMessageReceived(const QString &message)
 {
-    DASH_LOG(debug) << "[NodeBridge] Raw message:" << message.toStdString();
+    // DASH_LOG(debug) << "[NodeBridge] Raw message:" << message.toStdString();
 
     const QJsonDocument doc =
         QJsonDocument::fromJson(message.toUtf8());
@@ -120,9 +120,9 @@ void NodeBridge::onTextMessageReceived(const QString &message)
         }
     } else if (type == "vehicle.lights") {
         const bool headlightsOn = msg.value("headlights").toBool(false);
-        DASH_LOG(info) << "[NodeBridge] Headlights are"
-                       << (headlightsOn ? "ON" : "OFF");
-                       emit darkMode(headlightsOn);
+        // DASH_LOG(info) << "[NodeBridge] Headlights are"
+        //                << (headlightsOn ? "ON" : "OFF");
+        //                emit darkMode(headlightsOn);
     } else if (type == "darkMode") {
         const bool enabled = msg.value("enabled").toBool(false);
         emit darkMode(enabled);
