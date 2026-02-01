@@ -63,6 +63,13 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     blackoutOverlay->setStyleSheet("background: rgba(0, 0, 0, 150);");
     blackoutOverlay->hide();
 
+    dimOverlay = new QWidget(this);
+    dimOverlay->setObjectName("DimOverlay");
+    dimOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    dimOverlay->setAttribute(Qt::WA_AcceptTouchEvents, false);
+    dimOverlay->setStyleSheet("background: rgba(0, 0, 0, 125);"); // softer than blackout
+    dimOverlay->hide();
+
     loadWebUi();
 
     QTimer::singleShot(0, this, [this]() {
@@ -99,6 +106,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     }
     if (blackoutOverlay)
         blackoutOverlay->setGeometry(rect());
+    if (dimOverlay)
+        dimOverlay->setGeometry(rect());
 }
 
 void MainWindow::loadWebUi()
@@ -187,5 +196,15 @@ void MainWindow::updateAAFrameVisibility()
     } else {
         openAutoFrame->setVisible(false);
         debugContainer->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    }
+}
+void MainWindow::setDim(bool enable)
+{
+    if (enable) {
+        dimOverlay->setGeometry(this->rect());
+        dimOverlay->raise();
+        dimOverlay->show();
+    } else {
+        dimOverlay->hide();
     }
 }

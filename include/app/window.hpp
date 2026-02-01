@@ -24,10 +24,12 @@ public:
     NodeBridge* nodeBridge() const { return nodeBridge_; }
     bool blackoutMode = false;
     QWidget* blackoutOverlay = nullptr;
+    QWidget* dimOverlay = nullptr;
     void onTabChanged(const QString &tabName, bool aaConnected);
     void onAAStatusChanged(bool connected);
     void updateAAFrameVisibility();
     void setBlackout(bool enable);
+    void setDim(bool enable);
 
 protected:
     void showEvent(QShowEvent *event) override;
