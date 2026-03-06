@@ -31,9 +31,8 @@ void NodeBridge::setMainWindow(MainWindow* window)
 
 void NodeBridge::connectToServer(const QUrl &url)
 {
-    if (!socket_)
-        return;
-
+    if (!socket_) return;
+    serverUrl_ = url;  // save it for reconnects
     socket_->open(url);
 }
 
@@ -89,7 +88,18 @@ void NodeBridge::onConnected()
 
 void NodeBridge::onDisconnected()
 {
-    DASH_LOG(info) << "[NodeBridge] Node.js WebSocket disconnected";
+    DASH_LOG(info) << "[NodeBridge] Node.js WebSocket disconnected, retrying in 3s";
+
+    if (!reconnectTimer_) {
+        reconnectTimer_ = new QTimer(this);
+        reconnectTimer_->setSingleShot(true);
+        connect(reconnectTimer_, &QTimer::timeout, this, [this]() {
+            if (socket_->state() == QAbstractSocket::UnconnectedState)
+                socket_->open(serverUrl_);
+        });
+    }
+
+    reconnectTimer_->start(3000);
 }
 
 void NodeBridge::onTextMessageReceived(const QString &message)

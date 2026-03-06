@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QtWebSockets/QWebSocket>
+#include <QTimer>
 
 class MainWindow;
 
@@ -37,4 +38,6 @@ private slots:
 private:
     MainWindow* mainWindow = nullptr;
     QPointer<QWebSocket> socket_;
+    QTimer* reconnectTimer_ = nullptr;
+    QUrl serverUrl_;
 };
