@@ -22,6 +22,7 @@ public:
     explicit MainWindow(QRect geometry, QWidget *parent = nullptr);
     MainWindow* init(QRect geometry);
     NodeBridge* nodeBridge() const { return nodeBridge_; }
+    OpenAutoPage* openAutoPage() const { return openAutoFrame; }
     bool blackoutMode = false;
     QWidget* blackoutOverlay = nullptr;
     QWidget* dimOverlay = nullptr;

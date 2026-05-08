@@ -83,6 +83,7 @@ class OpenAutoPage : public QStackedWidget, public Page {
     QVariantMap buildMetadataMap(
         const aasdk::proto::messages::MediaInfoChannelMetadataData &metadata,
         const aasdk::proto::messages::MediaInfoChannelPlaybackData &playback);
+    void sendMediaKey(const QString &key);
 
    protected:
     void resizeEvent(QResizeEvent *event);

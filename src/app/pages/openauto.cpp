@@ -577,3 +577,18 @@ void OpenAutoPage::sendHandshake() {
         wsNode->sendTextMessage(QJsonDocument(obj).toJson(QJsonDocument::Compact));
     }
 }
+void OpenAutoPage::sendMediaKey(const QString &key) {
+    if (!worker) return;
+
+    Qt::Key qtKey;
+    if (key == "next")       qtKey = Qt::Key_MediaNext;
+    else if (key == "prev")  qtKey = Qt::Key_MediaPrevious;
+    else if (key == "play")  qtKey = Qt::Key_MediaPlay;
+    else if (key == "pause") qtKey = Qt::Key_MediaPause;
+    else return;
+
+    QKeyEvent press(QEvent::KeyPress, qtKey, Qt::NoModifier);
+    QKeyEvent release(QEvent::KeyRelease, qtKey, Qt::NoModifier);
+    worker->send_key_event(&press);
+    worker->send_key_event(&release);
+}
