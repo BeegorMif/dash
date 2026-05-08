@@ -138,5 +138,17 @@ void NodeBridge::onTextMessageReceived(const QString &message)
         emit darkMode(enabled);
     } else if (type =="tabChange") {
         mainWindow->onTabChanged(msg.value("tab").toString(), msg.value("aaConnected").toBool());
+    } else if (type == "mediaKey") {
+    const QString key = msg.value("key").toString();
+    if (mainWindow && mainWindow->openAutoPage())
+        mainWindow->openAutoPage()->sendMediaKey(key);
+    } else if (type == "system") {
+    if (msg.value("action").toString() == "extra_dim") {
+         const bool enabled = msg.value("value").toBool(false);
+         if (mainWindow)
+             mainWindow->setDim(enabled);
+    }
+    } else {
+        DASH_LOG(debug) << "[NodeBridge] Unhandled message type:" << type.toStdString();
     }
 }
