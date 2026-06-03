@@ -38,10 +38,12 @@ void NodeBridge::connectToServer(const QUrl &url)
 
 void NodeBridge::sendCustomMessage(const QJsonObject &payload)
 {
-    sendCustomMessage(
-        QJsonDocument(payload).toJson(QJsonDocument::Compact));
-}
+    QJsonObject enriched = payload;
+    enriched["source"] = "dash_app";
 
+    sendCustomMessage(
+        QJsonDocument(enriched).toJson(QJsonDocument::Compact));
+}
 void NodeBridge::sendCustomMessage(const QString &jsonString)
 {
     QPointer<QWebSocket> socketPtr(socket_);

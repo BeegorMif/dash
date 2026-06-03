@@ -156,7 +156,7 @@ bool MainWindow::BlackoutEventFilter::eventFilter(QObject* obj, QEvent* event)
         event->type() == QEvent::TouchBegin)
     {
         if (mainWindow->nodeBridge())
-            mainWindow->nodeBridge()->sendCustomMessage(R"({"type":"blackout","enabled":false})");
+            mainWindow->nodeBridge()->sendCustomMessage(R"({"type":"blackout","action":"update","payload":false})");
 
         mainWindow->setBlackout(false);
         obj->removeEventFilter(this);

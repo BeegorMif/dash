@@ -443,10 +443,12 @@ void OpenAutoPage::init()
     
         emit aaStatusChanged(enable); // <-- new signal
 
-        if(nodeBridge_) {
-            nodeBridge_->sendCustomMessage(
-                QString(R"({"type":"aa_status","connected":%1})")
-                .arg(enable ? "true" : "false"));
+        if (nodeBridge_) {
+            nodeBridge_->sendCustomMessage(QJsonObject{
+                {"type",    "aa_status"},
+                {"action",  "update"},
+                {"payload", enable}
+            });
         }
     });
 
@@ -482,6 +484,8 @@ void OpenAutoPage::init()
         }
         payload["length"] = metadata.track_length();
         payload["type"] = "metadata";
+        payload["action"] = "update";
+        payload["source"] = "dash_app";
 
         sendUpdate(payload);
     });
@@ -495,8 +499,9 @@ void OpenAutoPage::init()
             case aasdk::proto::messages::MediaInfoChannelPlaybackData::PAUSE: status = "Paused"; break;
             default: status = "Stopped"; break;
         }
-        payload["playbackStatus"] = status;
+        payload["action"] = status;
         payload["type"] = "playback";
+        payload["source"] = "dash_app";
 
         sendUpdate(payload);
     });
