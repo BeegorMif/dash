@@ -109,41 +109,46 @@ void NodeBridge::onTextMessageReceived(const QString &message)
         return;
     }
 
-    const QJsonObject obj = doc.object();
-    const QJsonObject msg = obj.value("msg").toObject();
+    const QJsonObject msg = doc.object();
     const QString type = msg.value("type").toString();
+    const QString action = msg.value("action").toString();
+    const QString source = msg.value("source").toString();
+    const QJsonObject payload =
+        msg.value("payload").toObject();
 
-    if (type == "blackout") {
-        const bool enabled = msg.value("enabled").toBool(false);
-        if (mainWindow)
-            mainWindow->setBlackout(enabled);
-    } else if (type == "system") {
-        if (msg.value("action").toString() == "extra_dim") {
-             const bool enabled = msg.value("value").toBool(false);
-             if (mainWindow)
-                 mainWindow->setDim(enabled);
+    if (type == "system") {
+        if (action == "extra_dim") {
+            const bool enabled = payload.value("value").toBool(false);
+            if (mainWindow)
+                mainWindow->setDim(enabled);
+        } else if (action == "blackout") {
+            const bool enabled = payload.value("value").toBool(false);
+            if (mainWindow)
+                mainWindow->setBlackout(enabled);
+        } else if (action == "darkMode") {
+            const bool enabled = payload.value("enabled").toBool(false);
+            emit darkMode(enabled);
         }
-    } else if (type == "vehicle.lights") {
-        const bool headlightsOn = msg.value("headlights").toBool(false);
-        // DASH_LOG(info) << "[NodeBridge] Headlights are"
-        //                << (headlightsOn ? "ON" : "OFF");
-                       emit darkMode(headlightsOn);
-    } else if (type == "darkMode") {
-        const bool enabled = msg.value("enabled").toBool(false);
-        emit darkMode(enabled);
-    } else if (type =="tabChange") {
-        mainWindow->onTabChanged(msg.value("tab").toString(), msg.value("aaConnected").toBool());
-    } else if (type == "mediaKey") {
-    const QString key = msg.value("key").toString();
-    if (mainWindow && mainWindow->openAutoPage())
-        mainWindow->openAutoPage()->sendMediaKey(key);
-    } else if (type == "system") {
-    if (msg.value("action").toString() == "extra_dim") {
-         const bool enabled = msg.value("value").toBool(false);
-         if (mainWindow)
-             mainWindow->setDim(enabled);
+    } else if (type == "vehicle" && action == "lights") {
+        const bool headlightsOn = payload.value("headlights").toBool(false);
+        emit darkMode(headlightsOn);
+    } else if (type =="browser" && action == "tabChange") {
+        if (mainWindow) {
+            mainWindow->onTabChanged(
+                payload.value("tab").toString(),
+                payload.value("aaConnected").toBool()
+            );
+        }
+    } else if (type == "media") {
+        if (mainWindow && mainWindow->openAutoPage())
+            mainWindow->openAutoPage()->sendMediaKey(action);
+    } else if (type == "canbus") {
+        return;
     }
-    } else {
-        DASH_LOG(debug) << "[NodeBridge] Unhandled message type:" << type.toStdString();
+    else {
+        DASH_LOG(debug)
+            << "[NodeBridge] Unhandled message:"
+            << type.toStdString()
+            << ":" << action.toStdString();
     }
 }
