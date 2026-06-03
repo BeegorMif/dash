@@ -72,7 +72,7 @@ void NodeBridge::sendPlaybackStatus(const QString &status)
 {
     QJsonObject payload;
     payload["type"] = "playback";
-    payload["playbackStatus"] = status;
+    payload["action"] = status;
     sendCustomMessage(payload);
 }
 
