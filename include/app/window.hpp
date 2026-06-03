@@ -31,6 +31,7 @@ public:
     void updateAAFrameVisibility();
     void setBlackout(bool enable);
     void setDim(bool enable);
+    void setNotificationPassthrough(bool passthrough);
 
 protected:
     void showEvent(QShowEvent *event) override;
@@ -40,8 +41,11 @@ private slots:
 
 private:
     void loadWebUi();
+    void loadNotificationUi();
+    QString resolveBaseUrl();
 
     QWebEngineView *webView = nullptr;
+    QWebEngineView *notificationView = nullptr;
 
     QWidget *debugContainer = nullptr;
     OpenAutoPage *openAutoFrame = nullptr;
@@ -50,7 +54,7 @@ private:
     NodeBridge* nodeBridge_ = nullptr;
 
     Arbiter arbiter;
-    
+
 public:
     QString currentTab = "android_auto";
     bool aaConnected = false;

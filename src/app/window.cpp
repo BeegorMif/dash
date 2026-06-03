@@ -56,6 +56,15 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     openAutoFrame->raise();
     this->setCentralWidget(container);
 
+    notificationView = new QWebEngineView(this);
+    notificationView->setObjectName("NotificationView");
+    notificationView->setAttribute(Qt::WA_TranslucentBackground, true);
+    notificationView->setStyleSheet("background: transparent;");
+    notificationView->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    notificationView->setGeometry(this->rect());
+    QWebEngineProfile* profile = notificationView->page()->profile();
+    notificationView->page()->setBackgroundColor(Qt::transparent);
+
     blackoutOverlay = new QWidget(this);
     blackoutOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, false);
     blackoutOverlay->setAttribute(Qt::WA_AcceptTouchEvents);
@@ -71,6 +80,11 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     dimOverlay->hide();
 
     loadWebUi();
+    loadNotificationUi();
+
+    notificationView->raise();
+    dimOverlay->raise();
+    blackoutOverlay->raise();
 
     QTimer::singleShot(0, this, [this]() {
         this->onTabChanged("android_auto", false);
@@ -98,6 +112,10 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
 
     int menuWidth = 70;
+
+    if (notificationView)
+    notificationView->setGeometry(rect());
+
     if(debugContainer) {
         debugContainer->setGeometry(0, 0, this->centralWidget()->width() - menuWidth, this->centralWidget()->height());
         if(openAutoFrame) {
@@ -110,19 +128,33 @@ void MainWindow::resizeEvent(QResizeEvent *event)
         dimOverlay->setGeometry(rect());
 }
 
-void MainWindow::loadWebUi()
+QString MainWindow::resolveBaseUrl()
 {
-    if(!webView) return;
-
     QTcpSocket socket;
     socket.connectToHost("127.0.0.1", 5173);
-    if(socket.waitForConnected(100)) {
+    if (socket.waitForConnected(100)) {
         socket.disconnectFromHost();
-        webView->load(QUrl("http://127.0.0.1:5173"));
-    } else {
-        // fallback to prod port
-        webView->load(QUrl("http://127.0.0.1:3000"));
+        return "http://127.0.0.1:5173";
     }
+    return "http://127.0.0.1:3000";
+}
+
+void MainWindow::loadWebUi()
+{
+    if (!webView) return;
+    webView->load(QUrl(resolveBaseUrl()));
+}
+
+void MainWindow::loadNotificationUi()
+{
+    if (!notificationView) return;
+    notificationView->load(QUrl(resolveBaseUrl() + "/notification.html"));
+}
+
+void MainWindow::setNotificationPassthrough(bool passthrough)
+{
+    if (notificationView)
+        notificationView->setAttribute(Qt::WA_TransparentForMouseEvents, passthrough);
 }
 
 void MainWindow::setBlackout(bool enable)
@@ -133,6 +165,8 @@ void MainWindow::setBlackout(bool enable)
         QWidget* topFrame = (openAutoFrame && openAutoFrame->isVisible()) ? openAutoFrame : debugContainer;
         enableBlackoutTouchHandler(blackoutOverlay);
         blackoutOverlay->setGeometry(this->rect());
+        notificationView->raise();
+        dimOverlay->raise();
         blackoutOverlay->raise();
         blackoutOverlay->show();
     } else {
@@ -202,6 +236,7 @@ void MainWindow::setDim(bool enable)
 {
     if (enable) {
         dimOverlay->setGeometry(this->rect());
+        notificationView->raise();
         dimOverlay->raise();
         dimOverlay->show();
     } else {
