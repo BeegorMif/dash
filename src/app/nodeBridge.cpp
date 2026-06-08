@@ -119,16 +119,14 @@ void NodeBridge::onTextMessageReceived(const QString &message)
         msg.value("payload").toObject();
 
     if (type == "system") {
+        const bool enabled = payload.value("value").toBool(false);
         if (action == "extra_dim") {
-            const bool enabled = payload.value("value").toBool(false);
             if (mainWindow)
                 mainWindow->setDim(enabled);
         } else if (action == "blackout") {
-            const bool enabled = payload.value("value").toBool(false);
             if (mainWindow)
                 mainWindow->setBlackout(enabled);
         } else if (action == "darkMode") {
-            const bool enabled = payload.value("enabled").toBool(false);
             emit darkMode(enabled);
         }
     } else if (type == "vehicle" && action == "lights") {
