@@ -142,12 +142,9 @@ void NodeBridge::onTextMessageReceived(const QString &message)
     } else if (type == "media") {
         if (mainWindow && mainWindow->openAutoPage())
             mainWindow->openAutoPage()->sendMediaKey(action);
-    } else if (type == "canbus") {
+    } else if (type == "canbus" || type == "debug" || type == "network") {
         return;
-    } else if (type == "debug") {
-        return;
-    }
-    else {
+    } else {
         DASH_LOG(debug)
             << "[NodeBridge] Unhandled message:"
             << type.toStdString()
