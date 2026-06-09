@@ -69,7 +69,7 @@ MainWindow::MainWindow(QRect geometry, QWidget *parent)
     blackoutOverlay->setAttribute(Qt::WA_TransparentForMouseEvents, false);
     blackoutOverlay->setAttribute(Qt::WA_AcceptTouchEvents);
 
-    blackoutOverlay->setStyleSheet("background: rgba(0, 0, 0, 150);");
+    blackoutOverlay->setStyleSheet("background: rgba(0, 0, 0, 1);");
     blackoutOverlay->hide();
 
     dimOverlay = new QWidget(this);
@@ -189,9 +189,6 @@ bool MainWindow::BlackoutEventFilter::eventFilter(QObject* obj, QEvent* event)
     if (event->type() == QEvent::MouseButtonPress ||
         event->type() == QEvent::TouchBegin)
     {
-        if (mainWindow->nodeBridge())
-            mainWindow->nodeBridge()->sendCustomMessage(R"({"type":"blackout","action":"update","payload":false})");
-
         mainWindow->setBlackout(false);
         obj->removeEventFilter(this);
         delete this;
