@@ -104,10 +104,10 @@ void WebviewPage::showEvent(QShowEvent* event) {
 
 // ---------------------- Node.js auto-reconnect ----------------------
 void WebviewPage::startNodeReconnect() {
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this); // create once
     QTimer* reconnectTimer = new QTimer(this);
-    connect(reconnectTimer, &QTimer::timeout, this, [this](){
+    connect(reconnectTimer, &QTimer::timeout, this, [this, manager](){
         if(!view_) return;
-        QNetworkAccessManager* manager = new QNetworkAccessManager(this);
         QNetworkRequest request(QUrl("http://127.0.0.1:3000"));
         QNetworkReply* reply = manager->get(request);
 
