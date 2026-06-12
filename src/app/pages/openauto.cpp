@@ -489,22 +489,90 @@ void OpenAutoPage::init()
 
         sendUpdate(payload);
     });
+    static bool hasTurnEvent = false;
+    static bool sentFiveMinuteWarning = false;
+    static aasdk::proto::messages::NavigationTurnEvent lastTurnEvent;
 
-    connect(aa_handler, &AAHandler::aa_media_playback_update,
-            [sendUpdate](const aasdk::proto::messages::MediaInfoChannelPlaybackData &playback){
+    connect(aa_handler, &AAHandler::aa_navigation_turn_event,
+            [sendUpdate](const aasdk::proto::messages::NavigationTurnEvent& turn){
+        lastTurnEvent = turn;
+        hasTurnEvent = true;
+        sentFiveMinuteWarning = false; // reset for new maneuver
+        
+        // send turn notification immediately
         QJsonObject payload;
-        QString status;
-        switch(playback.playback_state()) {
-            case aasdk::proto::messages::MediaInfoChannelPlaybackData::PLAY: status = "Playing"; break;
-            case aasdk::proto::messages::MediaInfoChannelPlaybackData::PAUSE: status = "Paused"; break;
-            default: status = "Stopped"; break;
+        payload["type"] = "navigation.turn";
+        payload["streetName"] = QString::fromStdString(turn.street_name());
+        payload["maneuverType"] = turn.maneuvertype();
+        payload["maneuverDirection"] = turn.maneuverdirection();
+        payload["notify"] = true;
+        if (turn.has_roundaboutexitnumber())
+            payload["roundaboutExit"] = (int)turn.roundaboutexitnumber();
+        if (turn.has_roundaboutexitangle())
+            payload["roundaboutAngle"] = (int)turn.roundaboutexitangle();
+        if (turn.has_turnimage()) {
+            QByteArray imgData = QByteArray::fromStdString(turn.turnimage());
+            payload["turnImageBase64"] = QString(imgData.toBase64());
         }
-        payload["action"] = status;
-        payload["type"] = "playback";
         payload["source"] = "dash_app";
-
+        payload["action"] = "update";
         sendUpdate(payload);
     });
+
+    connect(aa_handler, &AAHandler::aa_navigation_distance_event,
+            [sendUpdate](const aasdk::proto::messages::NavigationDistanceEvent& distance){
+        if (!hasTurnEvent) return;
+        
+        uint32_t seconds = distance.timetostepseconds();
+        static uint32_t lastSeconds = UINT32_MAX;
+        bool shouldSend = false;
+
+        // crossing under 5 minutes - send notification once per maneuver
+        if (seconds <= 300 && !sentFiveMinuteWarning) {
+            sentFiveMinuteWarning = true;
+            shouldSend = true;
+            
+            QJsonObject payload;
+            payload["type"] = "navigation.distance";
+            payload["meters"] = (int)distance.meters();
+            payload["timeToStepSeconds"] = (int)seconds;
+            payload["distanceUnit"] = (int)distance.distanceunit();
+            payload["notify"] = true; // tell Vue to show notification
+            payload["source"] = "dash_app";
+            payload["action"] = "update";
+            lastSeconds = seconds;
+            sendUpdate(payload);
+            return;
+        }
+        
+        // normal throttled updates after that, no notification
+        if (seconds > 300) {
+            static uint32_t lastMeters = UINT32_MAX;
+            if (std::abs((int)distance.meters() - (int)lastMeters) >= 50) {
+                shouldSend = true;
+                lastMeters = distance.meters();
+            }
+        } else if (seconds > 60) {
+            shouldSend = (lastSeconds == UINT32_MAX || lastSeconds - seconds >= 30);
+        } else {
+            shouldSend = (lastSeconds == UINT32_MAX || lastSeconds - seconds >= 5);
+        }
+        
+        if (!shouldSend) return;
+        lastSeconds = seconds;
+        
+        QJsonObject payload;
+        payload["type"] = "navigation.distance";
+        payload["meters"] = (int)distance.meters();
+        payload["timeToStepSeconds"] = (int)seconds;
+        payload["distanceUnit"] = (int)distance.distanceunit();
+        payload["source"] = "dash_app";
+        payload["action"] = "update";
+        // no notify flag - Vue just updates the stored state silently
+        sendUpdate(payload);
+    });
+
+
 
     this->addWidget(this->frame);
 }
