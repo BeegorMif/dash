@@ -511,13 +511,17 @@ void OpenAutoPage::init()
         payload["maneuverDirection"] = turn.maneuverdirection();
         payload["notify"] = true; // show notification once
 
+        if (turn.has_turnimage()) {
+            OPENAUTO_LOG(info) << "[NavTurn] raw turnimage() size: " << turn.turnimage().size();
+        }
         if (turn.has_roundaboutexitnumber())
             payload["roundaboutExit"]  = (int)turn.roundaboutexitnumber();
         if (turn.has_roundaboutexitangle())
             payload["roundaboutAngle"] = (int)turn.roundaboutexitangle();
         if (turn.has_turnimage()) {
             QByteArray imgData = QByteArray::fromStdString(turn.turnimage());
-            payload["turnImageBase64"] = QString(imgData.toBase64());
+            QString b64 = QString(imgData.toBase64());
+            payload["turnImageBase64"] = b64;
         }
 
         payload["source"] = "dash_app";
