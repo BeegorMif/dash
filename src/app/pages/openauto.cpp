@@ -511,9 +511,6 @@ void OpenAutoPage::init()
         payload["maneuverDirection"] = turn.maneuverdirection();
         payload["notify"] = true; // show notification once
 
-        if (turn.has_turnimage()) {
-            OPENAUTO_LOG(info) << "[NavTurn] raw turnimage() size: " << turn.turnimage().size();
-        }
         if (turn.has_roundaboutexitnumber())
             payload["roundaboutExit"]  = (int)turn.roundaboutexitnumber();
         if (turn.has_roundaboutexitangle())
