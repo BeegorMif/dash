@@ -531,7 +531,15 @@ void OpenAutoPage::init()
             [sendUpdate](const aasdk::proto::messages::NavigationDistanceEvent& distance){
         if (!hasTurnEvent) return;
 
-        uint32_t meters  = distance.meters();
+        uint32_t meters;
+        if (distance.distanceunit() == aasdk::proto::enums::DistanceUnit::YARDS ||
+            distance.distanceunit() == aasdk::proto::enums::DistanceUnit::FEET ||
+            distance.distanceunit() == aasdk::proto::enums::DistanceUnit::MILES) {
+            // distancetostepmillis is millimetres; convert to metres for a consistent payload unit
+            meters = static_cast<uint32_t>(distance.distancetostepmillis() / 1000);
+        } else {
+            meters = distance.meters();
+        }
         uint32_t seconds = distance.timetostepseconds();
 
         // Throttle by distance bucket — no point sending every meter
