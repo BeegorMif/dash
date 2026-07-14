@@ -28,7 +28,9 @@ int main(int argc, char *argv[])
             "--enable-main-frame-before-activation "
             "--renderer-process-limit=2 "    // limit renderer processes, saves RAM
             "--disable-dev-shm-usage "       // Pi /dev/shm is small, avoid it
-            "--memory-pressure-off");        // stop Chromium throttling itself
+            "--memory-pressure-off ";        // stop Chromium throttling itself
+            "--enable-logging=stderr --v=1");
+
     qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
 
     qputenv("QT_QUICK_CONTROLS_STYLE", "Material");
