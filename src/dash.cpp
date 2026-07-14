@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
             "--enable-gpu-rasterization "
             "--enable-zero-copy "
             "--ignore-gpu-blocklist "
-            "--use-gl=egl"
+            "--use-gl=egl "
             "--enable-features=VaapiVideoEncoder "
             "--num-raster-threads=4 "        // Pi 4 has 4 cores, use them
             "--enable-main-frame-before-activation "
