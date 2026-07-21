@@ -11,7 +11,6 @@
 #include <QTextStream>
 
 #include "app/arbiter.hpp"
-#include "app/pages/webview.hpp"
 #include "aasdk_proto/ButtonCodeEnum.pb.h"
 
 #include "app/session.hpp"
@@ -24,7 +23,6 @@ Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
 {
     this->pages_ = {
         this->openauto_page,
-        new WebviewPage(arbiter)
     };
 
     for (auto page : this->pages_) {
