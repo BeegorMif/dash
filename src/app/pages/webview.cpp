@@ -43,7 +43,7 @@ WebviewPage::WebviewPage(Arbiter &arbiter, QWidget *parent)
     , pageLoaded_(false)
     , arbiter_(arbiter)
 {
-    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-gpu-sandbox --no-sandbox --use-gl=egl");
+
 }
 
 void WebviewPage::init() {
