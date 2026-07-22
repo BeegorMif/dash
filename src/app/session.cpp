@@ -18,7 +18,6 @@
 
 Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
     : scale(settings.value("Layout/scale", 1.0).toDouble())
-    , openauto_page(new OpenAutoPage(arbiter))
 {
 }
 

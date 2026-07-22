@@ -27,8 +27,6 @@ class Session {
     struct Layout {
 
         double scale;
-        OpenAutoPage *openauto_page;
-
         Layout(QSettings &settings, Arbiter &arbiter);
 
     };
