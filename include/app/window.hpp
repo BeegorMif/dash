@@ -32,6 +32,7 @@ public:
     void setBlackout(bool enable);
     void setDim(bool enable);
     void setNotificationPassthrough(bool passthrough);
+    void notifyBlackoutManualChange(bool state);
 
 protected:
     void showEvent(QShowEvent *event) override;
