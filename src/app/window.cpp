@@ -203,7 +203,7 @@ bool MainWindow::BlackoutEventFilter::eventFilter(QObject* obj, QEvent* event)
 void MainWindow::notifyBlackoutManualChange(bool state)
 {
     if (nodeBridge_) {
-        nodeBridge_->send(QJsonObject{
+        nodeBridge_->sendCustomMessage(QJsonObject{
             {"type", "system"},
             {"action", "blackout"},
             {"payload", QJsonObject{
