@@ -19,43 +19,11 @@
 Session::Layout::Layout(QSettings &settings, Arbiter &arbiter)
     : scale(settings.value("Layout/scale", 1.0).toDouble())
     , openauto_page(new OpenAutoPage(arbiter))
-    , curr_page(nullptr)
 {
-    this->pages_ = {
-        this->openauto_page,
-    };
-
-    for (auto page : this->pages_) {
-        if (page->enabled()) {
-            this->curr_page = page;
-            break;
-        }
-    }
 }
-
-Page *Session::Layout::next_enabled_page(Page *page) const
-{
-    auto id = this->page_id(page);
-    do {
-        id = (id + 1) % this->pages_.size();
-    } while (!this->page(id)->enabled());
-
-    return this->page(id);
-}
-
 
 Session::System::System(QSettings &settings, Arbiter &arbiter)
 {
-}
-
-QFrame *Session::Forge::br(bool vertical)
-{
-    auto br = new QFrame();
-    br->setLineWidth(2);
-    br->setFrameShape(vertical ? QFrame::VLine : QFrame::HLine);
-    br->setFrameShadow(QFrame::Plain);
-
-    return br;
 }
 
 void Session::Forge::to_touch_scroller(QAbstractScrollArea *area)

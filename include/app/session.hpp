@@ -28,17 +28,9 @@ class Session {
 
         double scale;
         OpenAutoPage *openauto_page;
-        Page *curr_page;
 
         Layout(QSettings &settings, Arbiter &arbiter);
-        Page *next_enabled_page(Page *page) const;
 
-        const QList<Page *> &pages() const { return this->pages_; }
-        Page *page(int id) const { return this->pages_.value(id, nullptr); }
-        int page_id(Page *page) const { return this->pages_.indexOf(page); }
-
-       private:
-        QList<Page *> pages_;
     };
 
     struct System {
