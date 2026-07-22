@@ -492,7 +492,6 @@ void OpenAutoPage::init()
     static bool hasTurnEvent = false;
     static aasdk::proto::messages::NavigationTurnEvent lastTurnEvent;
     static uint32_t lastMeters = UINT32_MAX;
-    static uint32_t lastSeconds = UINT32_MAX;
 
     // Turn event — fires once per new maneuver, owns the notification
     connect(aa_handler, &AAHandler::aa_navigation_turn_event,
