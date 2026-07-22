@@ -190,6 +190,7 @@ bool MainWindow::BlackoutEventFilter::eventFilter(QObject* obj, QEvent* event)
         event->type() == QEvent::TouchBegin)
     {
         mainWindow->setBlackout(false);
+        mainWindow->notifyBlackoutManualChange(false);
         obj->removeEventFilter(this);
         delete this;
 
@@ -199,6 +200,19 @@ bool MainWindow::BlackoutEventFilter::eventFilter(QObject* obj, QEvent* event)
     return QObject::eventFilter(obj, event);
 }
 
+void MainWindow::notifyBlackoutManualChange(bool state)
+{
+    if (nodeBridge_) {
+        nodeBridge_->send(QJsonObject{
+            {"type", "system"},
+            {"action", "blackout"},
+            {"payload", QJsonObject{
+                {"value", state},
+                {"source", "manual"}
+            }}
+        });
+    }
+}
 void MainWindow::onTabChanged(const QString &tabName, bool aaConnectedFlag)
 {
     currentTab = tabName;
