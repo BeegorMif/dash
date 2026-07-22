@@ -142,7 +142,7 @@ void NodeBridge::onTextMessageReceived(const QString &message)
     } else if (type == "media") {
         if (mainWindow && mainWindow->openAutoPage())
             mainWindow->openAutoPage()->sendMediaKey(action);
-    } else if (type == "canbus" || type == "debug" || type == "network") {
+    } else if (type == "canbus" || type == "debug" || type == "network" || type == "keyboard") {
         return;
     } else {
         DASH_LOG(debug)
