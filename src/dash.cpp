@@ -35,13 +35,14 @@ int main(int argc, char *argv[])
     qputenv("QT_QUICK_CONTROLS_STYLE", "Material");
     QApplication dash(argc, argv);
 
+    dash.setOrganizationName("openDsh");
+    dash.setApplicationName("dash");
+
     QWebEngineProfile::defaultProfile()->settings()->setAttribute(
         QWebEngineSettings::Accelerated2dCanvasEnabled, true);
     QWebEngineProfile::defaultProfile()->settings()->setAttribute(
         QWebEngineSettings::WebGLEnabled, true);
         
-    dash.setOrganizationName("openDsh");
-    dash.setApplicationName("dash");
 
     QSize size = dash.primaryScreen()->size();
     QPoint pos = dash.primaryScreen()->geometry().topLeft();
